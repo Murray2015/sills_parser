@@ -18,14 +18,14 @@ Also ran sed -i '$ d' to remove final line (which reads "EOD")
 
 
 ### Uncomment for OGA data
-#file = "OGA_sills.dat"
-#ff_file = "oga_forced_folds.dat"
-#sf_file = "oga_seafloor.dat"
+file = "OGA_sills.dat"
+ff_file = "oga_forced_folds.dat"
+sf_file = "oga_seafloor.dat"
 
 ### Uncomment for PAD data
-file = "all_sills_PAD_ireland.dat"
-ff_file = "pad_forced_folds.dat"
-sf_file = "seafloor_PAD_ireland.dat"
+#file = "all_sills_PAD_ireland.dat"
+#ff_file = "pad_forced_folds.dat"
+#sf_file = "seafloor_PAD_ireland.dat"
 
 import math 
 import numpy as np 
@@ -152,15 +152,17 @@ for line in file_connection:
             mid_x = (x_min + x_max) / 2.0
             mid_y = (y_min + y_max) / 2.0
             sill_max_depth = depth_con(mid_x, mid_y, sill_max_t)
+            sill_min_depth = depth_con(mid_x, mid_y, sill_min_t)
             ff_max_time = ff_time(mid_x, mid_y)
             ff_max_depth = depth_con(mid_x, mid_y, ff_max_time)
             decomp_emplac_depth = decompact(ff_max_depth, sill_max_depth, z3=0)
+            decomp_min_depth = decompact(ff_max_depth, sill_min_depth, z3=0)
             emplacement_depth.append(decomp_emplac_depth)
             midpoint_x.append(mid_x)
             midpoint_y.append(mid_y)
             diameter.append(math.sqrt((x_max - x_min)**2 + (y_max - y_min)**2))
             sill_time.append(sill_max_t)
-            trans_height.append(depth_con(mid_x, mid_y, sill_max_t) - depth_con(mid_x, mid_y, sill_min_t))
+            trans_height.append(abs(decomp_emplac_depth - decomp_min_depth))
             x, y, z, x_min, x_max, y_min, y_max = np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan
             z_list = []
     else:
@@ -195,5 +197,5 @@ data.plot(x="midpoint_x", y="midpoint_y", kind="scatter")
 data.plot(x="emplacement_depth", y="transgressive_height", kind="scatter").plot([0,8], [0,8], 'r-')
 
 # Write to CSV 
-data.to_csv("output.csv")
+data.to_csv("oga_output_trans_decomp.csv")
 # End of script
