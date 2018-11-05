@@ -79,15 +79,22 @@ psscale -D2.75i/1i/2i/0.25i -Cmag.cpt -B100 -K -O >> $outfile
 psxy $prj $rgn faults_misc.gmt -Sf0.25/0.25+r+f -W0.5,red -K -O >> $outfile
 psxy $prj $rgn folds_tuitt.gmt -Sf0.2/0.05+t -Gred -W0.5,red -K -O >> $outfile
 psxy $prj $rgn volc_tuitt.gmt -St0.2 -Gred -Wred -K -O >> $outfile
-psxy $prj $rgn $linefile -gd5k $misc -O >> $outfile
+psxy $prj $rgn $linefile -gd5k $misc -K -O >> $outfile
 
 # Legend
+pslegend -Dx4.2i/0.6i+w3i -O <<EOF >> $outfile
+S 0.1i t 0.2i red red 0.5i Volcanic centre
+S 0.1i f0.25/0.25+r+f 0.2i red 0.5,red 0.5i Fault
+S 0.1i f0.2/0.05+t 0.2i red 0.5,red 0.5i Inversion structure
+S 0.1i - 0.2i black 1 0.5i Seismic line
+EOF
 
-okular $outfile
+convert -trim -rotate 90 -bordercolor white -border 30x30 -quality 100 -density 600 $outfile intro_maps.jpg
 
 
 
 
+eog *jpg
 
 
 # Histogram of sill lengths and along line sill lengths
