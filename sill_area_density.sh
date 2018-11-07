@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 gmtset MAP_FRAME_TYPE plain
 file="oga_output_trans_decomp.csv"
@@ -36,7 +36,8 @@ eog *jpg
 # sill_area_density
 
 
-
+multi_map()
+{
 # Dataset maps x3, and in 4th panel add legend + add extra symbols, eg igneous centres and regional faults. Add text to map eg rosemary bank - Get OGA grav and mag data.
 datadir="/home/murray/Documents/Work/rockall_potential_fields/Rockall_Trough/Processed/grids/geotiff/"
 outfile="intro_maps.ps"
@@ -90,15 +91,27 @@ S 0.1i - 0.2i black 1 0.5i Seismic line
 EOF
 
 convert -trim -rotate 90 -bordercolor white -border 30x30 -quality 100 -density 600 $outfile intro_maps.jpg
+}
+# multi_map
+
+sill_stat_hist()
+{
+# Histogram of sill lengths, transgressive heights and emplacement depth
+awk -F"," '{if(NR>1)print $2/1000, $3, $7}' ${file} > temp_sills_whitespace.txt
+outfile=sill_stat_hist.ps
+pshistogram temp_sills_whitespace.txt -JX2.5i -R0/60/0/120 -W1 -Bx10+l"Diameter (km)" -By50+l"Frequency" -BSWne -Gblack -i0 -K > $outfile
+pshistogram temp_sills_whitespace.txt -JX2.5i -W0.1 -Bx1+l"Transgressive height (km)" -BsNwe -Gblack -i1 -X2.5i -K -O >> $outfile
+pshistogram temp_sills_whitespace.txt -JX2.5i -W0.1 -Bx1+l"Emplacement depth (km)" -BSwne -Gblack -i2 -X2.5i -O >> $outfile
+psconvert $outfile -A0.5 -P
+}
+# sill_stat_hist
+
+# Derivative maps of gravity and magnetic data, with extra lines of major faults, with sill counts overlain.
 
 
+
+# Number of sills In each lithology, eg vaila (automate - get horizons and find distance between.)
 
 
 eog *jpg
-
-
-# Histogram of sill lengths and along line sill lengths
-# Histogram of transgressive heights
-# Histogram emplacement depth
-# Derivative maps of gravity and magnetic data, with extra lines of major faults, with sill counts overlain.
-# Number of sills In each lithology, eg vaila (automate - get horizons and find distance between.)
+exit
