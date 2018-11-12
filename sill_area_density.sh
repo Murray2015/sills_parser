@@ -102,8 +102,8 @@ EOF
 convert -trim -rotate 90 -bordercolor white -border 30x30 -quality 100 -density 600 $outfile intro_maps.jpg
 eog intro_maps.jpg
 }
-multi_map
-exit
+# multi_map
+
 
 sill_stat_hist()
 {
@@ -116,6 +116,7 @@ pshistogram temp_sills_whitespace.txt -JX2.5i -W0.1 -Bx1+l"Emplacement depth (km
 psconvert $outfile -A0.5 -P
 }
 # sill_stat_hist
+
 
 # Derivative maps of gravity and magnetic data, with extra lines of major faults, with sill counts overlain.
 outfile="deriv_maps.ps"
@@ -137,26 +138,30 @@ grdmath oga_rtpmaganomaly_dz.nc oga_rtpmaganomaly_resamp.nc XOR = oga_rtpmaganom
 
 
 # Gravity map
-makecpt -T-400/400/100 -M -Cpolar -Z -D > gravdz.cpt
+makecpt -T-400/400/100 -M -Cblue,white,orange -Z -D > gravdz.cpt
 grdimage oga_bouguer20_dz_cut.nc -Cgravdz.cpt $prj $rgn -Y1.5i -K > $outfile
 grdcontour oga_bouguer20_dz_cut.nc -C50 $prj $rgn -Wgray10 -K -O >> $outfile
 pscoast $prj $rgn -Di -Gblack -K -O >> $outfile
-psscale -D0.5i/-0.5i+w2i/0.1i+h+e -Cgravdz.cpt -B200+l"Gravity gradient" -K -O >> $outfile
+psscale -D0.5i/-0.5i+w2i/0.15i+h+e -Cgravdz.cpt -B0+l"Gravity gradient" -K -O >> $outfile
 psxy $prj $rgn faults_misc.gmt -Sf0.25/0.25+r+f -W0.5,red -K -O >> $outfile
 psxy $prj $rgn folds_tuitt.gmt -Sf0.2/0.05+t -Gred -W0.5,red -K -O >> $outfile
 psxy $prj $rgn volc_tuitt.gmt -St0.2 -Gred -Wred -K -O >> $outfile
 psxy $prj $rgn $linefile -gd5k $misc -K -O >> $outfile
+psxy $prj $rgn sills_geog.txt -Sc0.05 -Gred -Wblack -K -O >> $outfile
+echo "a" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -K -O >> $outfile
 
 # Magnetic map
-makecpt -T-3000/3000/100 -M -Cgreen,white,red -Z -D > magdz.cpt
+makecpt -T-3000/3000/100 -M -Cgreen,white,orange -Z -D > magdz.cpt
 grdimage oga_rtpmaganomaly_dz_cut.nc -Cmagdz.cpt $prj $rgn -X3.25i -K -O >> $outfile
 grdcontour oga_rtpmaganomaly_dz_cut.nc -C2000 $prj $rgn -Wgray10 -K -O >> $outfile
 pscoast $prj $rgn -Di -Gblack -K -O >> $outfile
-psscale -D0.5i/-0.5i+w2i/0.1i+h+e  -Cmagdz.cpt -B2000+l"Magnetic gradient" -K -O >> $outfile
+psscale -D0.5i/-0.5i+w2i/0.15i+h+e  -Cmagdz.cpt -B0+l"Magnetic gradient" -K -O >> $outfile
 psxy $prj $rgn faults_misc.gmt -Sf0.25/0.25+r+f -W0.5,red -K -O >> $outfile
 psxy $prj $rgn folds_tuitt.gmt -Sf0.2/0.05+t -Gred -W0.5,red -K -O >> $outfile
 psxy $prj $rgn volc_tuitt.gmt -St0.2 -Gred -Wred -K -O >> $outfile
-psxy $prj $rgn $linefile -gd5k -Bx2 -By2 -BSwEn -O >> $outfile
+psxy $prj $rgn $linefile -gd5k -Bx2 -By2 -BSwEn -K -O >> $outfile
+psxy $prj $rgn sills_geog.txt -Sc0.05 -Gred -Wblack -K -O >> $outfile
+echo "b" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -O >> $outfile
 psconvert -A0.5 -P $outfile
 # Number of sills In each lithology, eg vaila (automate - get horizons and find distance between.)
 
