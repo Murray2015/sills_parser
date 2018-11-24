@@ -120,7 +120,7 @@ psconvert $outfile -A0.5 -P
 vert_der()
 {
   # Vertical derivative maps of gravity and magnetic data, with extra lines of major faults, with sill counts overlain.
-  outfile="deriv_maps.ps"
+  outfile="vert_deriv_maps.ps"
   prj="-JM3i"
   rgn=`gmtinfo -I0.01 $linefile`
   ginc=0.02
@@ -131,19 +131,19 @@ vert_der()
   grd2xyz oga_bouguer20.nc | surface $rgn -I${ginc} -Goga_bouguer20_surf.nc
   grd2xyz oga_rtpmaganomaly.nc | surface $rgn -I${ginc} -Goga_rtpmaganomaly_surf.nc
   # Take derivatives
-  grdfft oga_bouguer20_surf.nc -D -Goga_bouguer20_dz.nc
-  grdfft oga_rtpmaganomaly_surf.nc -D -Goga_rtpmaganomaly_dz.nc
+  grdfft oga_bouguer20_surf.nc -D -Goga_bouguer20_dz.nc -fg
+  grdfft oga_rtpmaganomaly_surf.nc -D -Goga_rtpmaganomaly_dz.nc -fg
   # Cut grids with grid masks
   grdmath oga_bouguer20_dz.nc oga_bouguer20_resamp.nc XOR = oga_bouguer20_dz_cut.nc
   grdmath oga_rtpmaganomaly_dz.nc oga_rtpmaganomaly_resamp.nc XOR = oga_rtpmaganomaly_dz_cut.nc
 
 
   # Gravity map
-  makecpt -T-400/400/100 -M -Cblue,white,orange -Z -D > gravdz.cpt
+  makecpt -T-0.005/0.005/0.0001 -M -Cblue,white,orange -Z -D > gravdz.cpt
   grdimage oga_bouguer20_dz_cut.nc -Cgravdz.cpt $prj $rgn -Y1.5i -K > $outfile
   grdcontour oga_bouguer20_dz_cut.nc -C50 $prj $rgn -Wgray10 -K -O >> $outfile
   pscoast $prj $rgn -Di -Gblack -K -O >> $outfile
-  psscale -D0.5i/-0.5i+w2i/0.15i+h+e -Cgravdz.cpt -B0+l"Gravity gradient" -K -O >> $outfile
+  psscale -D0.5i/-0.5i+w2i/0.15i+h+e -Cgravdz.cpt -B0.004+l"Gravity d/dz" -By+l"mGal m@+-1@+" -K -O >> $outfile
   psxy $prj $rgn faults_misc.gmt -Sf0.25/0.25+r+f -W0.5,red -K -O >> $outfile
   psxy $prj $rgn folds_tuitt.gmt -Sf0.2/0.05+t -Gred -W0.5,red -K -O >> $outfile
   psxy $prj $rgn volc_tuitt.gmt -St0.2 -Gred -Wred -K -O >> $outfile
@@ -152,11 +152,11 @@ vert_der()
   echo "a" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -K -O >> $outfile
 
   # Magnetic map
-  makecpt -T-3000/3000/100 -M -Cgreen,white,orange -Z -D > magdz.cpt
+  makecpt -T-0.05/0.05/0.001 -M -Cgreen,white,orange -Z -D > magdz.cpt
   grdimage oga_rtpmaganomaly_dz_cut.nc -Cmagdz.cpt $prj $rgn -X3.25i -K -O >> $outfile
   grdcontour oga_rtpmaganomaly_dz_cut.nc -C2000 $prj $rgn -Wgray10 -K -O >> $outfile
   pscoast $prj $rgn -Di -Gblack -K -O >> $outfile
-  psscale -D0.5i/-0.5i+w2i/0.15i+h+e  -Cmagdz.cpt -B0+l"Magnetic gradient" -K -O >> $outfile
+  psscale -D0.5i/-0.5i+w2i/0.15i+h+e  -Cmagdz.cpt -B0.04+l"Magnetic d/dz"  -By+l"nT m@+-1@+" -K -O >> $outfile
   psxy $prj $rgn faults_misc.gmt -Sf0.25/0.25+r+f -W0.5,red -K -O >> $outfile
   psxy $prj $rgn folds_tuitt.gmt -Sf0.2/0.05+t -Gred -W0.5,red -K -O >> $outfile
   psxy $prj $rgn volc_tuitt.gmt -St0.2 -Gred -Wred -K -O >> $outfile
@@ -164,6 +164,7 @@ vert_der()
   psxy $prj $rgn sills_geog.txt -Sc0.05 -Gred -Wblack -K -O >> $outfile
   echo "b" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -O >> $outfile
   psconvert -A0.5 -P $outfile
+  eog vert_deriv_maps.jpg
 }
 # vert_der
 
@@ -184,11 +185,9 @@ horz_dir()
   # Take derivatives
   grdmath -M oga_bouguer20_surf.nc DDX SQR oga_bouguer20_surf.nc DDY SQR ADD SQRT = oga_bouguer20_THD.nc
   grdmath -M oga_rtpmaganomaly_surf.nc DDX SQR oga_rtpmaganomaly_surf.nc DDY SQR ADD SQRT = oga_rtpmaganomaly_THD.nc
-
   # Cut grids with grid masks
   grdmath oga_bouguer20_THD.nc oga_bouguer20_resamp.nc XOR = oga_bouguer20_THD_cut.nc
   grdmath oga_rtpmaganomaly_THD.nc oga_rtpmaganomaly_resamp.nc XOR = oga_rtpmaganomaly_THD_cut.nc
-
 
   # Gravity map
   makecpt -T0/0.004/0.0001 -M -Ccubhelix -Z -D > gravTHD.cpt
@@ -218,6 +217,7 @@ horz_dir()
   psconvert -A0.5 -P $outfile
   eog horz_deriv_maps.jpg
 }
-horz_dir
+# horz_dir
+
 
 exit
