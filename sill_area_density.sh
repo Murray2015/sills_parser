@@ -390,7 +390,7 @@ awk -F"," '{if(NR>1)print $4,$5,$2/1000.0,$3,$7}' ${file} > temp_sills_whitespac
 # Convert sills into latlon
 cat temp_sills_whitespace.txt | mapproject -Ju+29/1:1 -I -C -F > sills_x_y_diam_emdepth_trans.txt
 # Make cpt for sill colour
-makecpt -T0/2/0.5 -D -Crainbow > th.cpt
+makecpt -T0/2/0.25 -D -Crainbow > th.cpt
 # Bathymetry map
 makecpt -T0/4000/0.1 -I -Cabyss -Z -D > bathy.cpt
 makecpt -T0/4/0.01 -I -Cabyss -Z -D > bathy2.cpt
@@ -447,13 +447,13 @@ S 0.1i - 0.2i black 1 0.5i Seismic line
 G 1l
 S 0.1i c 0.05i white 0.5,black 0.5i Sill (fill colour as below)
 G 1l
-B th.cpt 0i 0.15i+e -B0.5+l"Sill transgressive height (km)"
+B th.cpt 0i 0.15i+ef -B0.5+l"Sill transgressive height (km)"
 EOF
 
 convert -trim -rotate 90 -bordercolor white -border 30x30 -quality 100 -density 600 $outfile sill_th_maps.jpg
 eog sill_th_maps.jpg
 }
-# multi_map_th
+multi_map_th
 
 
 
