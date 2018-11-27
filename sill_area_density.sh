@@ -22,16 +22,16 @@ blockmean $rgnoga sills_geog.txt -I10000+e -C -Sn -fg > oga_counts_10000.txt
 # Grid the counts
 nearneighbor $rgnoga oga_counts_10000.txt -I1000+e -N6 -S30000+e -fg -Goga_counts_10000.nc
 # Divide values by 10 to get sill area density
-grdmath oga_counts_10000.nc 10 DIV = oga_counts_1000.nc
+grdmath oga_counts_10000.nc 100 DIV = oga_counts_1000.nc
 # Make map
 outfile=oga_area_density.ps
-makecpt -Chot -T0/0.8/0.1 -Z -D > sill_area_d.cpt
+makecpt -Chot -T0/0.1/0.01 -Z -D > sill_area_d.cpt
 grdimage $prj $rgnoga oga_counts_1000.nc $misc -Csill_area_d.cpt -K > $outfile
 pscoast -Gblack -Di $prj $rgnoga -K -O >> $outfile
 psxy $prj $rgnoga -W0.5 $linefile -gd5k -K -O >> $outfile
-psscale -D3.25i/1.2i/2i/0.25i -B0.2+l"Sill area density (km @+-2@+)" -Csill_area_d.cpt -O >> $outfile
+psscale -D3.25i/1.2i/2i/0.25i -B0.02+l"Sill area density (km @+-2@+)" -Csill_area_d.cpt -O >> $outfile
 psconvert -P -A0.5 $outfile
-eog *jpg
+eog oga_area_density.jpg
 }
 # sill_area_density
 
@@ -110,9 +110,9 @@ sill_stat_hist()
 # Histogram of sill lengths, transgressive heights and emplacement depth
 awk -F"," '{if(NR>1)print $2/1000, $3, $7}' ${file} > temp_sills_whitespace.txt
 outfile=sill_stat_hist.ps
-pshistogram temp_sills_whitespace.txt -JX2.5i -R0/60/0/120 -W1 -Bx10+l"Diameter (km)" -By50+l"Frequency" -BSWne -Gblack -i0 -K > $outfile
+pshistogram temp_sills_whitespace.txt -JX2.5i -R0/60/0/150 -W1 -Bx10+l"Diameter (km)" -By50+l"Frequency" -BSWne -Gblack -i0 -K > $outfile
 pshistogram temp_sills_whitespace.txt -JX2.5i -W0.1 -Bx1+l"Transgressive height (km)" -BsNwe -Gblack -i2 -X2.5i -K -O >> $outfile
-pshistogram temp_sills_whitespace.txt -JX2.5i -W0.1 -Bx1+l"Emplacement depth (km)" -BSwne -Gblack -i1 -X2.5i -O >> $outfile
+pshistogram temp_sills_whitespace.txt -JX2.5i -W0.1 -Bx2+l"Emplacement depth (km)" -BSwne -Gblack -i1 -X2.5i -O >> $outfile
 psconvert $outfile -A0.5 -P
 eog sill_stat_hist.jpg
 }
@@ -233,7 +233,7 @@ awk -F"," '{if(NR>1)print $4,$5,$2/1000.0,$3,$7}' ${file} > temp_sills_whitespac
 # Convert sills into latlon
 cat temp_sills_whitespace.txt | mapproject -Ju+29/1:1 -I -C -F > sills_x_y_diam_emdepth_trans.txt
 # Make cpt for sill colour
-makecpt -T0/25/2.5 -D -Crainbow > diam.cpt
+makecpt -T0/20/2.5 -D -Crainbow > diam.cpt
 # Bathymetry map
 makecpt -T0/4000/0.1 -I -Cabyss -Z -D > bathy.cpt
 makecpt -T0/4/0.01 -I -Cabyss -Z -D > bathy2.cpt
@@ -282,7 +282,7 @@ echo "c" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite $misc -K -O >> $out
 
 
 # Legend
-pslegend -Dx4.4i/0.4i+w3i -O <<EOF >> $outfile
+pslegend -Dx4.4i/0.2i+w2.5i -O <<EOF >> $outfile
 S 0.1i t 0.2i red red 0.5i Volcanic centre
 S 0.1i f0.25/0.25+r+f 0.2i red 0.5,red 0.5i Fault
 S 0.1i f0.2/0.05+t 0.2i red 0.5,red 0.5i Inversion structure
@@ -290,7 +290,7 @@ S 0.1i - 0.2i black 1 0.5i Seismic line
 G 1l
 S 0.1i c 0.05i white 0.5,black 0.5i Sill (fill colour as below)
 G 1l
-B diam.cpt 0i 0.15i+e -B5+l"Sill diameter (km)"
+B diam.cpt 0i 0.15i+ef -B5+l"Sill diameter (km)"
 EOF
 
 convert -trim -rotate 90 -bordercolor white -border 30x30 -quality 100 -density 600 $outfile sill_diam_maps.jpg
@@ -311,7 +311,7 @@ awk -F"," '{if(NR>1)print $4,$5,$2/1000.0,$3,$7}' ${file} > temp_sills_whitespac
 # Convert sills into latlon
 cat temp_sills_whitespace.txt | mapproject -Ju+29/1:1 -I -C -F > sills_x_y_diam_emdepth_trans.txt
 # Make cpt for sill colour
-makecpt -T0/10/1 -D -Crainbow > emd.cpt
+makecpt -T0/8/1 -D -Crainbow > emd.cpt
 # Bathymetry map
 makecpt -T0/4000/0.1 -I -Cabyss -Z -D > bathy.cpt
 makecpt -T0/4/0.01 -I -Cabyss -Z -D > bathy2.cpt
@@ -360,7 +360,7 @@ echo "c" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite $misc -K -O >> $out
 
 
 # Legend
-pslegend -Dx4.4i/0.4i+w3i -O <<EOF >> $outfile
+pslegend -Dx4.4i/0.2i+w2.5i -O <<EOF >> $outfile
 S 0.1i t 0.2i red red 0.5i Volcanic centre
 S 0.1i f0.25/0.25+r+f 0.2i red 0.5,red 0.5i Fault
 S 0.1i f0.2/0.05+t 0.2i red 0.5,red 0.5i Inversion structure
@@ -439,7 +439,7 @@ echo "c" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite $misc -K -O >> $out
 
 
 # Legend
-pslegend -Dx4.4i/0.4i+w3i -O <<EOF >> $outfile
+pslegend -Dx4.4i/0.2i+w2.5i -O <<EOF >> $outfile
 S 0.1i t 0.2i red red 0.5i Volcanic centre
 S 0.1i f0.25/0.25+r+f 0.2i red 0.5,red 0.5i Fault
 S 0.1i f0.2/0.05+t 0.2i red 0.5,red 0.5i Inversion structure
