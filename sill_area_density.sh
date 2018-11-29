@@ -110,13 +110,13 @@ sill_stat_hist()
 # Histogram of sill lengths, transgressive heights and emplacement depth
 awk -F"," '{if(NR>1)print $2/1000, $3, $7}' ${file} > temp_sills_whitespace.txt
 outfile=sill_stat_hist.ps
-pshistogram temp_sills_whitespace.txt -JX2.5i -R0/60/0/150 -W1 -Bx10+l"Diameter (km)" -By50+l"Frequency" -BSWne -Gblack -i0 -K > $outfile
+pshistogram temp_sills_whitespace.txt -JX2.5i -R0/40/0/150 -W1 -Bx10+l"Diameter (km)" -By50+l"Frequency" -BSWne -Gblack -i0 -K > $outfile
 pshistogram temp_sills_whitespace.txt -JX2.5i -W0.1 -Bx1+l"Transgressive height (km)" -BsNwe -Gblack -i2 -X2.5i -K -O >> $outfile
 pshistogram temp_sills_whitespace.txt -JX2.5i -W0.1 -Bx2+l"Emplacement depth (km)" -BSwne -Gblack -i1 -X2.5i -O >> $outfile
 psconvert $outfile -A0.5 -P
 eog sill_stat_hist.jpg
 }
-# sill_stat_hist
+sill_stat_hist
 
 vert_der()
 {
@@ -453,7 +453,7 @@ EOF
 convert -trim -rotate 90 -bordercolor white -border 30x30 -quality 100 -density 600 $outfile sill_th_maps.jpg
 eog sill_th_maps.jpg
 }
-multi_map_th
+# multi_map_th
 
 
 
