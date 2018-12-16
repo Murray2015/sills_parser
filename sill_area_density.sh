@@ -43,6 +43,7 @@ datadir="/home/murray/Documents/Work/rockall_potential_fields/Rockall_Trough/Pro
 outfile="intro_maps.ps"
 prj="-JM2.5i"
 rgn=`gmtinfo -I0.1 $linefile`
+rgn=-R-14/-5/56/60.3
 # Bathymetry map
 makecpt -T0/4000/0.1 -I -Cabyss -Z -D > bathy.cpt
 makecpt -T0/4/0.01 -I -Cabyss -Z -D > bathy2.cpt
@@ -55,9 +56,9 @@ psscale -D2.75i/0.25i+w-1.5i/0.15i+e -Cbathy2.cpt -B1+l"Bathymetry (km)" -K -O >
 psxy $prj $rgn faults_misc.gmt -Sf0.25/0.25+r+f -W0.5,red -K -O >> $outfile
 psxy $prj $rgn folds_tuitt.gmt -Sf0.2/0.05+t -Gred -W0.5,red -K -O >> $outfile
 psxy $prj $rgn volc_tuitt.gmt -St0.2 -Gred -Wred -K -O >> $outfile
-psxy $prj $rgn $linefile -gd5k $misc -K -O >> $outfile
-psxy $prj $rgn sills_geog.txt $misc -Sc0.05 -Gred -Wblack -K -O >> $outfile
-echo "a" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite $misc -K -O >> $outfile
+psxy $prj $rgn $linefile -gd5k -Bx2 -By2 -BsWne -K -O >> $outfile
+psxy $prj $rgn sills_geog.txt -Sc0.05 -Gwhite -Wblack -K -O >> $outfile
+echo "a" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -K -O >> $outfile
 
 # Gravity map
 makecpt -T0/100/1 -M -Cmagma -Z -D > grav.cpt
@@ -71,23 +72,23 @@ psxy $prj $rgn faults_misc.gmt -Sf0.25/0.25+r+f -W0.5,red -K -O >> $outfile
 psxy $prj $rgn folds_tuitt.gmt -Sf0.2/0.05+t -Gred -W0.5,red -K -O >> $outfile
 psxy $prj $rgn volc_tuitt.gmt -St0.2 -Gred -Wred -K -O >> $outfile
 psxy $prj $rgn $linefile -gd5k $misc -K -O >> $outfile
-psxy $prj $rgn sills_geog.txt $misc -Sc0.05 -Gred -Wblack -K -O >> $outfile
+psxy $prj $rgn sills_geog.txt $misc -Sc0.05 -Gwhite -Wblack -K -O >> $outfile
 echo "b" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite $misc -K -O >> $outfile
 
 # Magnetic map
 makecpt -T-400/400/10 -M -Cpolar -Z -D > mag.cpt
 grdconvert ${datadir}rtpmaganomaly.tif oga_rtpmaganomaly_utm.nc
 grdproject $rgn -Ju29/1:1 oga_rtpmaganomaly_utm.nc -Goga_rtpmaganomaly.nc -I -C -F
-grdimage oga_rtpmaganomaly.nc -Cmag.cpt $prj $rgn -X-4i -Y-2.5i -K -O >> $outfile
+grdimage oga_rtpmaganomaly.nc -Cmag.cpt $prj $rgn -X-4i -Y-2.275i -K -O >> $outfile
 grdcontour oga_rtpmaganomaly.nc -C100 $prj $rgn -Wgray10 -K -O >> $outfile
 pscoast $prj $rgn -Di -Gblack -K -O >> $outfile
 psscale -D2.75i/0.25i+w1.5i/0.15i+e -Cmag.cpt -B100+l"Magnetic anomaly (nT)" -K -O >> $outfile
 psxy $prj $rgn faults_misc.gmt -Sf0.25/0.25+r+f -W0.5,red -K -O >> $outfile
 psxy $prj $rgn folds_tuitt.gmt -Sf0.2/0.05+t -Gred -W0.5,red -K -O >> $outfile
 psxy $prj $rgn volc_tuitt.gmt -St0.2 -Gred -Wred -K -O >> $outfile
-psxy $prj $rgn $linefile -gd5k $misc -K -O >> $outfile
-psxy $prj $rgn sills_geog.txt $misc -Sc0.05 -Gred -Wblack -K -O >> $outfile
-echo "c" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite $misc -K -O >> $outfile
+psxy $prj $rgn $linefile -gd5k -Bx2 -By2 -BSWe -K -O >> $outfile
+psxy $prj $rgn sills_geog.txt  -Sc0.05 -Gwhite -Wblack -K -O >> $outfile
+echo "c" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite  -K -O >> $outfile
 
 
 # Legend
@@ -96,13 +97,13 @@ S 0.1i t 0.2i red red 0.5i Volcanic centre
 S 0.1i f0.25/0.25+r+f 0.2i red 0.5,red 0.5i Fault
 S 0.1i f0.2/0.05+t 0.2i red 0.5,red 0.5i Inversion structure
 S 0.1i - 0.2i black 1 0.5i Seismic line
-S 0.1i c 0.05i red 0.5,black 0.5i Sill
+S 0.1i c 0.05i white 0.5,black 0.5i Sill
 EOF
 
 convert -trim -rotate 90 -bordercolor white -border 30x30 -quality 100 -density 600 $outfile intro_maps.jpg
 eog intro_maps.jpg
 }
-# multi_map
+multi_map
 
 
 sill_stat_hist()
@@ -116,7 +117,7 @@ pshistogram temp_sills_whitespace.txt -JX2.5i -W0.1 -Bx2+l"Emplacement depth (km
 psconvert $outfile -A0.5 -P
 eog sill_stat_hist.jpg
 }
-sill_stat_hist
+# sill_stat_hist
 
 vert_der()
 {
