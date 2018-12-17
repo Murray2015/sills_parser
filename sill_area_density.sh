@@ -9,7 +9,6 @@ ogr2ogr -F "GMT" folds_tuitt.gmt extra_data_rockall/folds_tuitt.shp
 ogr2ogr -F "GMT" volc_tuitt.gmt extra_data_rockall/volc_tuitt.shp
 
 
-
 sill_area_density()
 {
 prj="-JM3i"
@@ -319,7 +318,7 @@ pot_der_4()
   psconvert -A0.75 -P -E600 pot_deriv_maps_4.ps
   eog pot_deriv_maps_4.jpg
 }
-pot_der_4
+# pot_der_4
 
 
 multi_map_diam()
@@ -570,6 +569,161 @@ convert -trim -rotate 90 -bordercolor white -border 30x30 -quality 100 -density 
 eog sill_th_maps.jpg
 }
 # multi_map_th
+
+
+scatter_plot()
+{
+  # Convert sills into GMT format. Note space removal from name with tr.
+  tr -d " " <  ${file} | awk -F"," '{if(NR==1)print "midpoint_x midpoint_y name diameter emplacement_depth transgressive_height"; else print $4,$5,$6,$2,$3,$7}' > sills_gmt_format.txt
+  # Convert sills into latlon
+  mapproject -Ju+29/1:1 -I -C -F sills_gmt_format.txt  > sills_gmt_format_geog.txt
+  sed -i '1c midpoint_x midpoint_y name diameter emplacement_depth transgressive_height' sills_gmt_format_geog.txt
+
+  # Sample bathy
+  grdtrack sills_gmt_format_geog.txt -Goga_bathy.nc > temp1
+  # Sample grav
+  grdtrack temp1 -Goga_bouguer20.nc > temp2
+  # Sample mag
+  grdtrack temp2 -Goga_rtpmaganomaly.nc > sills_gmt_format_geog_sampled.txt
+  # Rename header and tidy temp files
+  sed -i '1c midpoint_x midpoint_y name diameter emplacement_depth transgressive_height bathy grav mag' sills_gmt_format_geog_sampled.txt
+  rm temp1 temp2
+
+  ### Analysis continued in R
+
+}
+# scatter_plot
+
+
+grid_sill_vals()
+{
+  rgn=-R-14/-5/56/60.3
+  # Convert sills into GMT format. Note space removal from name with tr.
+  tr -d " " <  ${file} | awk -F"," '{if(NR==1)print "midpoint_x midpoint_y name diameter emplacement_depth transgressive_height"; else print $4,$5,$6,$2,$3,$7}' > sills_gmt_format.txt
+  # Convert sills into latlon
+  mapproject -Ju+29/1:1 -I -C -F sills_gmt_format.txt  > sills_gmt_format_geog.txt
+  sed -i '1c midpoint_x midpoint_y name diameter emplacement_depth transgressive_height' sills_gmt_format_geog.txt
+
+  # diameter no preprocess
+  nearneighbor sills_gmt_format_geog.txt $rgn -fg -S20k -N3 -I10k -i0,1,3 -Gdiam_no_preproc.nc
+  makecpt `grdinfo -T100 diam_no_preproc.nc` -Z -Crainbow > temp_diam.cpt
+  grdimage -JM6i -B2 diam_no_preproc.nc -Ctemp_diam.cpt -P -K > temp_diam.ps
+  pscoast -J -R -Gblack -K -O >> temp_diam.ps
+  psscale -J -R -D6.25i/3i/3i/0.25i -B1000 -Ctemp_diam.cpt -O >> temp_diam.ps
+  # evince temp_diam.ps
+
+  # em depth no preprocess
+  nearneighbor sills_gmt_format_geog.txt $rgn -fg -S20k -N3 -I10k -i0,1,4 -Gemdepth_no_preproc.nc
+  makecpt `grdinfo -T1 emdepth_no_preproc.nc` -Z -Crainbow > temp_em.cpt
+  grdimage -JM6i -B2 emdepth_no_preproc.nc -Ctemp_em.cpt -P -K > temp_em.ps
+  pscoast -J -R -Gblack -K -O >> temp_em.ps
+  psscale -J -R -D6.5i/3i/3i/0.25i -Ctemp_em.cpt -O >> temp_em.ps
+  # evince temp_em.ps
+
+  # th no proprocess
+  nearneighbor sills_gmt_format_geog.txt $rgn -fg -S20k -N3 -I10k -i0,1,5 -Gth_no_preproc.nc
+  makecpt `grdinfo -T0.5 th_no_preproc.nc` -Z -Crainbow > temp_th.cpt
+  grdimage -JM6i -B2 th_no_preproc.nc -Ctemp_th.cpt -P -K > temp_th.ps
+  pscoast -J -R -Gblack -K -O >> temp_th.ps
+  psscale -J -R -D6.25i/3i/3i/0.25i -B1000 -Ctemp_diam.cpt -O >> temp_th.ps
+  # evince temp_th.ps
+
+
+  # diameter with preprocess
+  blockmean sills_gmt_format_geog.txt -i0,1,3 $rgn -I5k -fg > temp
+  nearneighbor temp $rgn -fg -S20k -N3 -I5k  -Gdiam_with_preproc.nc
+  grdmath diam_with_preproc.nc 1000 DIV = diam_with_preproc_km.nc
+  makecpt `grdinfo -T100 diam_with_preproc.nc` -Z -Crainbow > temp_diam.cpt
+  grdimage -JM6i -B2 diam_with_preproc.nc -Ctemp_diam.cpt -P -K > temp_pre_diam.ps
+  pscoast -J -R -Gblack -K -O >> temp_pre_diam.ps
+  psscale -J -R -D6.25i/3i/3i/0.25i -B1000 -Ctemp_diam.cpt -O >> temp_pre_diam.ps
+  # evince temp_pre_diam.ps
+
+  # em depth with preprocess
+  blockmean sills_gmt_format_geog.txt -i0,1,4 $rgn -I5k -fg > temp
+  nearneighbor temp $rgn -fg -S20k -N3 -I5k -Gemdepth_with_preproc.nc
+  makecpt `grdinfo -T1 emdepth_with_preproc.nc` -Z -Crainbow > temp_em.cpt
+  grdimage -JM6i -B2 emdepth_with_preproc.nc -Ctemp_em.cpt -P -K > temp_pre_em.ps
+  pscoast -J -R -Gblack -K -O >> temp_pre_em.ps
+  psscale -J -R -D6.5i/3i/3i/0.25i -Ctemp_em.cpt -O >> temp_pre_em.ps
+  # evince temp_pre_em.ps
+
+  # th with proprocess
+  blockmean sills_gmt_format_geog.txt -i0,1,5 $rgn -I5k -fg  > temp
+  nearneighbor temp $rgn -fg -S20k -N3 -I5k -Gth_with_preproc.nc
+  makecpt `grdinfo -T0.5 th_with_preproc.nc` -Z -Crainbow > temp_th.cpt
+  grdimage -JM6i -B2 th_with_preproc.nc -Ctemp_th.cpt -P -K > temp_pre_th.ps
+  pscoast -J -R -Gblack -K -O >> temp_pre_th.ps
+  psscale -J -R -D6.25i/3i/3i/0.25i -B1000 -Ctemp_diam.cpt -O >> temp_pre_th.ps
+  # evince temp_pre_th.ps
+}
+# grid_sill_vals
+
+
+multi_map_all_sills()
+{
+# Dataset maps x3, and in 4th panel add legend + add extra symbols, eg igneous centres and regional faults. Add text to map eg rosemary bank - Get OGA grav and mag data.
+datadir="/home/murray/Documents/Work/rockall_potential_fields/Rockall_Trough/Processed/grids/geotiff/"
+outfile="multi_map_all_sills.ps"
+prj="-JM2.5i"
+# rgn=`gmtinfo -I0.1 $linefile`
+rgn=-R-14/-5/56/60.3
+# Make cpt for sill colour
+makecpt -T0/12.5/2 -M -Z -D -Cplasma > diam_grd.cpt
+# Diameter map
+grdimage diam_with_preproc_km.nc -Cdiam_grd.cpt $prj $rgn -Y4i -K > $outfile
+grdcontour diam_with_preproc_km.nc -C2 $prj $rgn -Wgray10 -K -O >> $outfile
+pscoast $prj $rgn -Di -Gblack -K -O >> $outfile
+psscale -D2.65i/0.35i+w1.5i/0.15i+e -Cdiam_grd.cpt -B5+l"Sill diameter (km)" -K -O >> $outfile
+psxy $prj $rgn faults_misc.gmt -Sf0.25/0.25+r+f -W1,red -K -O >> $outfile
+psxy $prj $rgn folds_tuitt.gmt -Sf0.2/0.05+t -Gred -W1,red -K -O >> $outfile
+psxy $prj $rgn volc_tuitt.gmt -St0.2 -Gred -Wred -K -O >> $outfile
+psxy $prj $rgn $linefile -gd5k -K -O >> $outfile
+# psxy $prj $rgn sills_x_y_diam_emdepth_trans.txt -Sc0.05 -Cth.cpt -Wblack -i0,1,4 -K -O >> $outfile
+echo "a" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -Bx2 -By2 -BW -K -O >> $outfile
+psbasemap $prj $rgn -B0 -K -O >> $outfile
+
+# Transgressive height map
+makecpt -T0/1.5/0.25 -M -Cmagma -Z -D > th_grd.cpt
+grdimage th_with_preproc.nc -Cth_grd.cpt $prj $rgn -X3.5i -K -O >> $outfile
+grdcontour th_with_preproc.nc -C1 $prj $rgn -Wgray10 -K -O >> $outfile
+pscoast $prj $rgn -Di -Gblack -K -O >> $outfile
+psscale -D2.65i/0.35i+w1.5i/0.15i+e -Cth_grd.cpt -B0.5+l"Transgressive height (km)" -K -O >> $outfile
+psxy $prj $rgn faults_misc.gmt -Sf0.25/0.25+r+f -W1,red -K -O >> $outfile
+psxy $prj $rgn folds_tuitt.gmt -Sf0.2/0.05+t -Gred -W1,red -K -O >> $outfile
+psxy $prj $rgn volc_tuitt.gmt -St0.2 -Gred -Wred -K -O >> $outfile
+psxy $prj $rgn $linefile -gd5k -K -O >> $outfile
+# psxy $prj $rgn sills_x_y_diam_emdepth_trans.txt -Sc0.05 -Cth.cpt -Wblack -i0,1,4 -K -O >> $outfile
+echo "b" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -Bx2 -By2 -BS -K -O >> $outfile
+psbasemap $prj $rgn -B0 -K -O >> $outfile
+
+# Emplacement depth map
+makecpt -T0/6/1 -M -Cinferno -M -Z -D > em_grd.cpt
+grdimage emdepth_with_preproc.nc -Cem_grd.cpt $prj $rgn -X-3.5i -Y-2.5i -K -O >> $outfile
+grdcontour emdepth_with_preproc.nc -C1 $prj $rgn -Wgray10 -K -O >> $outfile
+pscoast $prj $rgn -Di -Gblack -K -O >> $outfile
+psscale -D2.65i/0.35i+w1.5i/0.15i+e -Cem_grd.cpt -B2+l"Emplacement depth (km)" -K -O >> $outfile
+psxy $prj $rgn faults_misc.gmt -Sf0.25/0.25+r+f -W1,red -K -O >> $outfile
+psxy $prj $rgn folds_tuitt.gmt -Sf0.2/0.05+t -Gred -W1,red -K -O >> $outfile
+psxy $prj $rgn volc_tuitt.gmt -St0.2 -Gred -Wred -K -O >> $outfile
+psxy $prj $rgn $linefile -gd5k -K -O >> $outfile
+# psxy $prj $rgn sills_x_y_diam_emdepth_trans.txt -Sc0.05 -Cth.cpt -Wblack -i0,1,4 -K -O >> $outfile
+echo "c" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -Bx2 -By2 -BSW -K -O >> $outfile
+psbasemap $prj $rgn -B0 -K -O >> $outfile
+
+# Legend
+pslegend -Dx4i/0.3i+w2.2i -O <<EOF >> $outfile
+S 0.1i t 0.2i red red 0.5i Volcanic centre
+S 0.1i f0.25/0.5+r+f 0.2i red 1,red 0.5i Fault
+S 0.1i f0.2/0.05+t 0.2i red 1,red 0.5i Inversion structure
+S 0.1i - 0.2i black 1 0.5i Seismic line
+S 0.1i c 0.05i white 0.5,black 0.5i Sill
+EOF
+
+convert -trim -rotate 90 -bordercolor white -border 30x30 -quality 100 -density 600 $outfile multi_map_all_sills.jpg
+eog multi_map_all_sills.jpg
+}
+multi_map_all_sills
 
 
 
