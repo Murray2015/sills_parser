@@ -114,13 +114,51 @@ sill_stat_hist()
 # Histogram of sill lengths, transgressive heights and emplacement depth
 awk -F"," '{if(NR>1)print $2/1000, $3, $7}' ${file} > temp_sills_whitespace.txt
 outfile=sill_stat_hist.ps
+# Calculate summary stats
+gmtmath temp_sills_whitespace.txt -C0,1,2 LOWER -S  = stats_lower.txt
+gmtmath temp_sills_whitespace.txt -C0,1,2 25 PQUANT -S  = stats_lq.txt
+gmtmath temp_sills_whitespace.txt -C0,1,2 -S  MEAN = stats_mean.txt
+gmtmath temp_sills_whitespace.txt -C0,1,2 -S  MEDIAN = stats_median.txt
+gmtmath temp_sills_whitespace.txt -C0,1,2 75 PQUANT -S  = stats_uq.txt
+gmtmath temp_sills_whitespace.txt -C0,1,2 UPPER -S  = stats_upper.txt
+plot_stat(){
+  file=$1
+  col=$2
+  colour=$3
+  echo $file $col $colour
+  awk -v col=$col '{print $col, 0"\n" $col, 150"\n"}' < $file | psxy -J -R -K -O -W2,${colour} >> $outfile
+}
 pshistogram temp_sills_whitespace.txt -JX2.5i -R0/40/0/150 -W1 -Bx10+l"Diameter (km)" -By50+l"Frequency" -BSWne -Gblack -i0 -K > $outfile
-pshistogram temp_sills_whitespace.txt -JX2.5i -W0.1 -Bx1+l"Transgressive height (km)" -BsNwe -Gblack -i2 -X2.5i -K -O >> $outfile
-pshistogram temp_sills_whitespace.txt -JX2.5i -W0.1 -Bx2+l"Emplacement depth (km)" -BSwne -Gblack -i1 -X2.5i -O >> $outfile
+plot_stat stats_lower.txt 1 red
+plot_stat stats_lq.txt 1 orange
+plot_stat stats_median.txt 1 yellow
+plot_stat stats_mean.txt 1 green
+plot_stat stats_uq.txt 1 blue
+plot_stat stats_upper.txt 1 violet
+pshistogram temp_sills_whitespace.txt -JX2.5i -R0/40/0/150 -W1 -Bx10+l"Diameter (km)" -By50+l"Frequency" -BSWne -Gblack -i0 -O -K >> $outfile
+psbasemap -R -J -B0 -K -O >> $outfile
+pshistogram temp_sills_whitespace.txt -JX2.5i  -R0/5/0/150 -W0.1 -Bx1+l"Transgressive height (km)" -BsNwe -Gblack -i2 -X2.5i -K -O >> $outfile
+plot_stat stats_lower.txt 3 red
+plot_stat stats_lq.txt 3 orange
+plot_stat stats_median.txt 3 yellow
+plot_stat stats_mean.txt 3 green
+plot_stat stats_uq.txt 3 blue
+plot_stat stats_upper.txt 3 violet
+pshistogram temp_sills_whitespace.txt -JX2.5i  -R0/5/0/150 -W0.1 -Bx1+l"Transgressive height (km)" -BsNwe -Gblack -i2 -K -O >> $outfile
+psbasemap -R -J -B0 -K -O >> $outfile
+pshistogram temp_sills_whitespace.txt -JX2.5i -R0/10/0/150 -W0.1 -Bx2+l"Emplacement depth (km)" -BSwne -Gblack -i1 -X2.5i -K -O >> $outfile
+plot_stat stats_lower.txt 2 red
+plot_stat stats_lq.txt 2 orange
+plot_stat stats_median.txt 2 yellow
+plot_stat stats_mean.txt 2 green
+plot_stat stats_uq.txt 2 blue
+plot_stat stats_upper.txt 2 violet
+pshistogram temp_sills_whitespace.txt -JX2.5i -R0/10/0/150 -W0.1 -Bx2+l"Emplacement depth (km)" -BSwne -Gblack -i1 -K -O >> $outfile
+psbasemap -R -J -B0 -O >> $outfile
 psconvert $outfile -A0.5 -P
 eog sill_stat_hist.jpg
 }
-# sill_stat_hist
+sill_stat_hist
 
 vert_der()
 {
@@ -723,7 +761,7 @@ EOF
 convert -trim -rotate 90 -bordercolor white -border 30x30 -quality 100 -density 600 $outfile multi_map_all_sills.jpg
 eog multi_map_all_sills.jpg
 }
-multi_map_all_sills
+# multi_map_all_sills
 
 
 
