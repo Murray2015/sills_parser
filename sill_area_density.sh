@@ -8,6 +8,31 @@ misc="-Bx2 -By2 -BSWne"
 # ogr2ogr -F "GMT" folds_tuitt.gmt extra_data_rockall/folds_tuitt.shp
 # ogr2ogr -F "GMT" volc_tuitt.gmt extra_data_rockall/volc_tuitt.shp
 
+rockall_basemap()
+{
+  outfile="basemap_sills.ps"
+  prj="-JM2.5i"
+  rgn=-R-14/-5/56/60.3
+  # Make cpt for sill colour
+  makecpt -T-10898/8271/100 -Z -D -Cetopo1 > etopo_rock.cpt
+  makecpt -T-10.898/8.271/1 -Z -D -Cetopo1 > etopo_rock2.cpt
+  grdimage ../global_data/ETOPO1_Ice_g_gmt4.grd -Cetopo1 $prj $rgn -Y4i -K > $outfile
+  grdcontour ../global_data/ETOPO1_Ice_g_gmt4.grd -C500 $prj $rgn -Wgray10 -K -O >> $outfile
+  psscale -D2.65i/0.35i+w1.5i/0.15i+e -Cetopo1 -B4000+l"Topography (m)" -K -O >> $outfile
+  psxy $prj $rgn $linefile -gd5k -K -O >> $outfile
+  psbasemap $prj $rgn -B0 -K -O >> $outfile
+  psbasemap $prj $rgn -DjBR+w0.5i+o0.15i/0.1i+stmp -F+gwhite+p1p+c0.1c -K -O >> $outfile
+  read x0 y0 w h < tmp
+  gmt pscoast -Rg -JG0/50N/$w -Da -Gblack -A5000 -Bg -Wfaint -O -K -X$x0 -Y$y0 >> $outfile
+  echo "-14 56
+  -14 60.3
+  -5 60.3
+  -5 56
+  -14 56" | gmt psxy -Wred -Gred -R -J -O -K >> $outfile
+  okular $outfile
+}
+rockall_basemap
+
 
 sill_area_density()
 {
@@ -790,15 +815,15 @@ seismic_image()
   ## Plot potential fields
   gmtset FONT_LABEL 12p,Helvetica,red
   gmtset FONT_ANNOT_PRIMARY 12p,Helvetica,red
-  psxy boug_grav_extract.txt -JX6i/1.5i -R58.9533953568/59.4564513411/10/75 -i1,2 -W1,red -Y3i -Bx0 -By20+l"Bouguer Gravity (mGal)" -BsWn -K -O >> $outfile
+  psxy boug_grav_extract.txt -JX6i/1.5i -R58.9533953568/59.4564513411/10/75 -i1,2 -W1,red -Y3i -Bx0 -By20+l"Bouguer Gravity (mGal)" -BsEn -K -O >> $outfile
   # psxy mag_extract.txt -JX6i/1.5i -R58.9533953568/59.4564513411/-182/-45 -i1,2 -W1,green -B0 -K -O >> $outfile
   gmtset FONT_LABEL 12p,Helvetica,darkred
   gmtset FONT_ANNOT_PRIMARY 12p,Helvetica,darkred
-  psxy THD_grav_extract.txt -JX6i/1.5i -R58.9533953568/59.4564513411/0/0.004 -i1,2 -W1,darkred -Bx0 -By0.001+l"THD Gravity (mGal m@+-1@+)" -BsEn -O >> $outfile
+  psxy THD_grav_extract.txt -JX6i/1.5i -R58.9533953568/59.4564513411/0/0.004 -i1,2 -W1,darkred -Bx0 -By0.001+l"THD Gravity (mGal m@+-1@+)" -BsWn -O >> $outfile
   # psxy THD_mag_extract.txt -JX6i/1.5i -R58.9533953568/59.4564513411/0.001/0.02 -i1,2 -W1,darkgreen -B0 -O >> $outfile
   convert -trim -bordercolor white -border 30x30 -quality 100 -density 600 seis_OGA_A012.ps seis_OGA_A012.png
   eog seis_OGA_A012.png
 }
-seismic_image
+# seismic_image
 
 exit
