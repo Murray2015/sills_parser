@@ -4,9 +4,9 @@ gmtset MAP_FRAME_TYPE plain
 file="oga_output_trans_decomp.csv"
 linefile="Rockall-UK_coords_geog.txt"
 misc="-Bx2 -By2 -BSWne"
-ogr2ogr -F "GMT" faults_misc.gmt extra_data_rockall/faults_misc.shp
-ogr2ogr -F "GMT" folds_tuitt.gmt extra_data_rockall/folds_tuitt.shp
-ogr2ogr -F "GMT" volc_tuitt.gmt extra_data_rockall/volc_tuitt.shp
+# ogr2ogr -F "GMT" faults_misc.gmt extra_data_rockall/faults_misc.shp
+# ogr2ogr -F "GMT" folds_tuitt.gmt extra_data_rockall/folds_tuitt.shp
+# ogr2ogr -F "GMT" volc_tuitt.gmt extra_data_rockall/volc_tuitt.shp
 
 
 sill_area_density()
@@ -158,7 +158,7 @@ psbasemap -R -J -B0 -O >> $outfile
 psconvert $outfile -A0.5 -P
 eog sill_stat_hist.jpg
 }
-sill_stat_hist
+# sill_stat_hist
 
 vert_der()
 {
@@ -764,6 +764,41 @@ eog multi_map_all_sills.jpg
 # multi_map_all_sills
 
 
-
+seismic_image()
+{
+  ## Get line coords
+  # segyread tape=OGA_A012.sgy | segyclean | sugethw key=sx,sy output=geom > linecoords.txt
+  # mapproject linecoords.txt -Ju+28/1:1 -I -C -F > linecoords_geog.txt
+  ## Extract mag
+  # grdtrack linecoords_geog.txt -Goga_rtpmaganomaly.nc > mag_extract.txt
+  # grdtrack linecoords_geog.txt -Goga_rtpmaganomaly_dz_cut.nc > dz_mag_extract.txt
+  # grdtrack linecoords_geog.txt -Goga_rtpmaganomaly_THD_cut.nc > THD_mag_extract.txt
+  ## Extract grav
+  # grdtrack linecoords_geog.txt -Goga_bouguer20.nc > boug_grav_extract.txt
+  # grdtrack linecoords_geog.txt -Goga_bouguer20_dz_cut.nc > dz_grav_extract.txt
+  # grdtrack linecoords_geog.txt -Goga_bouguer20_THD_cut.nc > THD_grav_extract.txt
+  ## Plot line
+  # segy2grd OGA_A012.sgy -GOGA_A012.nc -I1/0.004 -R1/7582/0/10
+  outfile=seis_OGA_A012.ps
+  makecpt -Cdarkblue,white,darkred -D -Z -T-400/400/10 > myseis.cpt
+  gmtset FONT_LABEL 12p,Helvetica,black
+  gmtset FONT_ANNOT_PRIMARY 12p,Helvetica,black
+  grdimage OGA_A012.nc -JX6i/-3i -R1/7582/0/6 -Cmyseis.cpt -Bx1000+l"CDP" -By2+l"TWT (s)" -BSWne -P -K > $outfile
+  echo "1250 2.4
+  1600 5" | psxy -R -J -W1,red,- -K -O >> $outfile
+  echo "1500 3.5 77 0.2i" | psxy -J -R -Sv0.1i+l+ea30 -Gred -W1,red -K -O >> $outfile
+  ## Plot potential fields
+  gmtset FONT_LABEL 12p,Helvetica,red
+  gmtset FONT_ANNOT_PRIMARY 12p,Helvetica,red
+  psxy boug_grav_extract.txt -JX6i/1.5i -R58.9533953568/59.4564513411/10/75 -i1,2 -W1,red -Y3i -Bx0 -By20+l"Bouguer Gravity (mGal)" -BsWn -K -O >> $outfile
+  # psxy mag_extract.txt -JX6i/1.5i -R58.9533953568/59.4564513411/-182/-45 -i1,2 -W1,green -B0 -K -O >> $outfile
+  gmtset FONT_LABEL 12p,Helvetica,darkred
+  gmtset FONT_ANNOT_PRIMARY 12p,Helvetica,darkred
+  psxy THD_grav_extract.txt -JX6i/1.5i -R58.9533953568/59.4564513411/0/0.004 -i1,2 -W1,darkred -Bx0 -By0.001+l"THD Gravity (mGal m@+-1@+)" -BsEn -O >> $outfile
+  # psxy THD_mag_extract.txt -JX6i/1.5i -R58.9533953568/59.4564513411/0.001/0.02 -i1,2 -W1,darkgreen -B0 -O >> $outfile
+  convert -trim -bordercolor white -border 30x30 -quality 100 -density 600 seis_OGA_A012.ps seis_OGA_A012.png
+  eog seis_OGA_A012.png
+}
+seismic_image
 
 exit
