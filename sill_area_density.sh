@@ -39,7 +39,7 @@ rockall_basemap()
   convert -trim -bordercolor white -border 30x30 -quality 100 -density 600 $outfile basemap_sills.png
   eog basemap_sills.png
 }
-rockall_basemap
+# rockall_basemap
 
 
 sill_area_density()
@@ -168,6 +168,7 @@ plot_stat stats_median.txt 1 yellow
 plot_stat stats_mean.txt 1 green
 plot_stat stats_uq.txt 1 blue
 plot_stat stats_upper.txt 1 violet
+echo "a" | pstext -J -R -F+cTR -C35% -W1.5 -D-0.3 -Gwhite -K -O >> $outfile
 pshistogram temp_sills_whitespace.txt -JX2.5i -R0/40/0/150 -W1 -Bx10+l"Diameter (km)" -By50+l"Frequency" -BSWne -Gblack -i0 -O -K >> $outfile
 psbasemap -R -J -B0 -K -O >> $outfile
 pshistogram temp_sills_whitespace.txt -JX2.5i  -R0/5/0/150 -W0.1 -Bx1+l"Transgressive height (km)" -BsNwe -Gblack -i2 -X2.5i -K -O >> $outfile
@@ -177,6 +178,7 @@ plot_stat stats_median.txt 3 yellow
 plot_stat stats_mean.txt 3 green
 plot_stat stats_uq.txt 3 blue
 plot_stat stats_upper.txt 3 violet
+echo "b" | pstext -R -J -F+cTR -C35% -W1.5 -D-0.3 -Gwhite -K -O >> $outfile
 pshistogram temp_sills_whitespace.txt -JX2.5i  -R0/5/0/150 -W0.1 -Bx1+l"Transgressive height (km)" -BsNwe -Gblack -i2 -K -O >> $outfile
 psbasemap -R -J -B0 -K -O >> $outfile
 pshistogram temp_sills_whitespace.txt -JX2.5i -R0/10/0/150 -W0.1 -Bx2+l"Emplacement depth (km)" -BSwne -Gblack -i1 -X2.5i -K -O >> $outfile
@@ -186,12 +188,13 @@ plot_stat stats_median.txt 2 yellow
 plot_stat stats_mean.txt 2 green
 plot_stat stats_uq.txt 2 blue
 plot_stat stats_upper.txt 2 violet
+echo "c" | pstext -J -R -F+cTR -C35% -W1.5 -D-0.3 -Gwhite -K -O >> $outfile
 pshistogram temp_sills_whitespace.txt -JX2.5i -R0/10/0/150 -W0.1 -Bx2+l"Emplacement depth (km)" -BSwne -Gblack -i1 -K -O >> $outfile
 psbasemap -R -J -B0 -O >> $outfile
 psconvert $outfile -A0.5 -P
 eog sill_stat_hist.jpg
 }
-# sill_stat_hist
+sill_stat_hist
 
 vert_der()
 {
