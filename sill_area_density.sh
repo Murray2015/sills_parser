@@ -7,6 +7,8 @@ misc="-Bx2 -By2 -BSWne"
 # ogr2ogr -F "GMT" faults_misc.gmt extra_data_rockall/faults_misc.shp
 # ogr2ogr -F "GMT" folds_tuitt.gmt extra_data_rockall/folds_tuitt.shp
 # ogr2ogr -F "GMT" volc_tuitt.gmt extra_data_rockall/volc_tuitt.shp
+gmtset FONT_LABEL 12p,Helvetica,black
+gmtset FONT_ANNOT_PRIMARY 12p,Helvetica,black
 
 rockall_basemap()
 {
@@ -14,12 +16,17 @@ rockall_basemap()
   prj="-JM2.5i"
   rgn=-R-14/-5/56/60.3
   # Make cpt for sill colour
-  makecpt -T-10898/8271/100 -Z -D -Cetopo1 > etopo_rock.cpt
-  makecpt -T-10.898/8.271/1 -Z -D -Cetopo1 > etopo_rock2.cpt
-  grdimage ../global_data/ETOPO1_Ice_g_gmt4.grd -Cetopo1 $prj $rgn -Y4i -K > $outfile
+  makecpt -T-10000/12000/100 -Z -D -Cetopo1 > etopo_rock.cpt
+  makecpt -T-10/10/0.1 -Z -D -Cetopo1 > etopo_rock2.cpt
+  grdimage ../global_data/ETOPO1_Ice_g_gmt4.grd -Cetopo1 $prj $rgn -P -Bx2 -By2 -BSWne -K > $outfile
   grdcontour ../global_data/ETOPO1_Ice_g_gmt4.grd -C500 $prj $rgn -Wgray10 -K -O >> $outfile
-  psscale -D2.65i/0.35i+w1.5i/0.15i+e -Cetopo1 -B4000+l"Topography (m)" -K -O >> $outfile
-  psxy $prj $rgn $linefile -gd5k -K -O >> $outfile
+  psscale -D2.65i/0.35i+w1.5i/0.15i+e -Cetopo_rock2.cpt -B4+l"Topography (km)" -K -O >> $outfile
+  psxy $prj $rgn $linefile -gd5k -W0.2,darkred -K -O >> $outfile
+  psxy $prj $rgn volc_tuitt.gmt -St0.2 -Gred -Wred -K -O >> $outfile
+  echo "-12 58 Rockall Basin" | pstext -J -R -F+a75 -K -O >> $outfile
+  echo "-10 59 Rosemary Bank" | pstext -J -R -F+f8p,Helvetica,black -K -O >> $outfile
+  echo "-11 57.3 Anton Dohrn" | pstext -J -R -K -F+f8p,Helvetica,black -O >> $outfile
+  echo "-10.5 56.3 Hebrides Terrace" | pstext -J -R -K -F+f8p,Helvetica,black -O >> $outfile
   psbasemap $prj $rgn -B0 -K -O >> $outfile
   psbasemap $prj $rgn -DjBR+w0.5i+o0.15i/0.1i+stmp -F+gwhite+p1p+c0.1c -K -O >> $outfile
   read x0 y0 w h < tmp
@@ -29,7 +36,8 @@ rockall_basemap()
   -5 60.3
   -5 56
   -14 56" | gmt psxy -Wred -Gred -R -J -O -K >> $outfile
-  okular $outfile
+  convert -trim -bordercolor white -border 30x30 -quality 100 -density 600 $outfile basemap_sills.png
+  eog basemap_sills.png
 }
 rockall_basemap
 
