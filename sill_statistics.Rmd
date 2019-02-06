@@ -1,0 +1,140 @@
+---
+title: "OGA_sill_statistics"
+author: "Murray Hoggett"
+date: "27 November 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## UK North and Northeast Rockall Sill Statistics 
+This is an R Markdown document for calculating summary statistics on sills measured on 2D seismic data from the UK Oil and Gas Authority (OGA) survey.
+
+
+```{r echo=FALSE}
+library("ggplot2")
+library("moments")
+library("gridExtra")
+setwd("~/Documents/Work/oga_pad_sills")
+data = read.csv("oga_output_trans_decomp.csv")
+data$diameter = data$diameter/1000.0 # To convert diameter from meters to km. 
+```
+
+
+## Get summary statistics 
+```{r}
+summary(subset(data, select = - c(X, midpoint_x, name, midpoint_y)))
+print("Skewness:")
+lapply(data[c("diameter", "emplacement_depth", "transgressive_height")], skewness)
+print("Kurtosis:")
+lapply(data[c("diameter", "emplacement_depth", "transgressive_height")], kurtosis)
+```
+
+## Plot distributions 
+
+```{r}
+a = ggplot(data, aes(x=diameter/1000)) + geom_histogram() + xlab("Diameter (km)")
+b = ggplot(data, aes(x=emplacement_depth)) + geom_histogram() + xlab("Emplacement depth (km)")
+c = ggplot(data, aes(x=transgressive_height)) + geom_histogram() + xlab("Transgressive height (km)")
+grid.arrange(a, b, c, ncol=3, widths=c(2,2,2), heights=c(20,1,8))
+```
+
+
+
+
+```{r, echo=FALSE}
+ggplot(data, aes(x=diameter, y=transgressive_height)) + geom_point() + geom_smooth(method="lm")
+
+ggplot(data, aes(x=diameter, y=emplacement_depth)) + geom_point() + geom_smooth(method="lm")
+
+ggplot(data, aes(y=transgressive_height, x=emplacement_depth)) + geom_point() + geom_smooth(method="lm")
+```
+
+## Influence of bathymetry, gravity and magnetics
+
+```{r}
+sampled_data = read.table("sills_gmt_format_geog_sampled.txt", header=T)
+sampled_data$diameter = sampled_data$diameter / 1000.0
+sampled_data$bathy = sampled_data$bathy / 1000.0
+
+library("GGally")
+my_fn <- function(data, mapping, ...){
+  p <- ggplot(data = data, mapping = mapping) + 
+    geom_point(alpha = 0.3,    size=0.2) + 
+    geom_smooth(method=loess, fill="red", color="red", ...) +
+    geom_smooth(method=lm, fill="blue", color="blue", ...)
+  p
+}
+ggpairs(sampled_data[,c(4:9)], lower = list(continuous = my_fn), columnLabels = c("Diameter (km)", "Em. depth (km)", "Tr. height (km)", "Bathymetry (km)", "Gravity (mGal)", "Magnetic (nT)"), rowLabels = c("Diameter (km)", "Em. depth (km)", "Tr. height (km)", "Bathymetry (km)", "Gravity (mGal)", "Magnetic (nT)")) 
+ggsave("oga_scatter_matrix.jpg", width=8, height=8, units="in", dpi=500)
+
+ggplot(sampled_data) + geom_point(aes(x=bathy/1000, y=diameter/1000), color="green", alpha=0.5) + geom_point(aes(x=bathy/1000, y=transgressive_height), color="blue", alpha=0.5) + geom_point(aes(x=bathy/1000, y=emplacement_depth), color="purple", alpha=0.5) + xlab("Bathymetry (km)") + ylab("Measurement (km)")
+
+plot(sampled_data$bathy, sampled_data$diameter)
+plot(sampled_data$bathy, sampled_data$transgressive_height)
+plot(sampled_data$bathy, sampled_data$emplacement_depth)
+
+plot(sampled_data$grav, sampled_data$diameter)
+plot(sampled_data$grav, sampled_data$transgressive_height)
+plot(sampled_data$grav, sampled_data$emplacement_depth)
+
+plot(sampled_data$mag, sampled_data$diameter)
+plot(sampled_data$mag, sampled_data$transgressive_height)
+plot(sampled_data$mag, sampled_data$emplacement_depth)
+
+
+names(sampled_data)
+```
+
+
+```{r}
+ggplot(sampled_data, aes(x=bathy, y=diameter/1000)) + geom_point() + geom_smooth(method="lm") 
+ggplot(sampled_data, aes(x=bathy, y=transgressive_height)) + geom_point() + geom_smooth(method="lm")
+ggplot(sampled_data, aes(x=bathy, y=emplacement_depth)) + geom_point() + geom_smooth(method="lm") 
+
+ggplot(sampled_data, aes(x=grav, y=diameter/1000)) + geom_point() + geom_smooth(method="lm")
+ggplot(sampled_data, aes(x=grav, y=transgressive_height)) + geom_point()+ geom_smooth(method="lm")
+ggplot(sampled_data, aes(x=grav, y=emplacement_depth)) + geom_point()+ geom_smooth(method="lm")
+
+ggplot(sampled_data, aes(x=mag, y=diameter/1000)) + geom_point()+ geom_smooth(method="lm")
+ggplot(sampled_data, aes(x=mag, y=transgressive_height)) + geom_point()+ geom_smooth(method="lm")
+ggplot(sampled_data, aes(x=mag, y=emplacement_depth)) + geom_point()+ geom_smooth(method="lm")
+
+```
+
+
+## Get regression outputs for relationships 
+
+```{r}
+bath_diam = lm(diameter ~ bathy, data=sampled_data)
+summary(bath_diam)
+
+grav_diam = lm(diameter ~ grav, data=sampled_data)
+summary(grav_diam)
+
+bath_diam = lm(diameter ~ bathy, data=sampled_data)
+summary(bath_diam)
+
+bath_th = lm(transgressive_height ~ bathy, data=sampled_data)
+summary(bath_th)
+
+grav_th = lm(transgressive_height ~ grav, data=sampled_data)
+summary(grav_th)
+
+bath_th = lm(transgressive_height ~ bathy, data=sampled_data)
+summary(bath_th)
+
+bath_ed = lm(emplacement_depth ~ bathy, data=sampled_data)
+summary(bath_ed)
+
+grav_ed = lm(emplacement_depth ~ grav, data=sampled_data)
+summary(grav_ed)
+
+bath_ed = lm(emplacement_depth ~ bathy, data=sampled_data)
+summary(bath_ed)
+
+names(sampled_data)
+```
+

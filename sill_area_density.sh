@@ -27,6 +27,12 @@ rockall_basemap()
   echo "-10 59 Rosemary Bank" | pstext -J -R -F+f8p,Helvetica,black -K -O >> $outfile
   echo "-11 57.3 Anton Dohrn" | pstext -J -R -K -F+f8p,Helvetica,black -O >> $outfile
   echo "-10.5 56.3 Hebrides Terrace" | pstext -J -R -K -F+f8p,Helvetica,black -O >> $outfile
+  psxy well_location.txt -J -R -S+0.12i -Gblack -K -O >> $outfile
+  psxy well_location.txt -J -R -Sc0.06i -Gblack -K -O >> $outfile
+  for i in `seq 1 17`
+  do
+  awk -v i=$i '{if(NR==i)print $0}' well_location.txt | pstext -J -R -F+f6,Helvetica,black -D0.2i/0i -K -O >> $outfile
+  done
   psbasemap $prj $rgn -B0 -K -O >> $outfile
   psbasemap $prj $rgn -DjBR+w0.5i+o0.15i/0.1i+stmp -F+gwhite+p1p+c0.1c -K -O >> $outfile
   read x0 y0 w h < tmp
@@ -77,8 +83,8 @@ prj="-JM2.5i"
 rgn=`gmtinfo -I0.1 $linefile`
 rgn=-R-14/-5/56/60.3
 # Bathymetry map
-makecpt -T0/4000/0.1 -I -Cabyss -Z -D > bathy.cpt
-makecpt -T0/4/0.01 -I -Cabyss -Z -D > bathy2.cpt
+makecpt -T0/2500/0.1 -I -Crainbow -Z -D > bathy.cpt
+makecpt -T0/2.5/0.01 -I -Crainbow -Z -D > bathy2.cpt
 grdconvert ${datadir}bathymetry.tif oga_bathy_utm.nc
 grdproject $rgn -Ju29/1:1 oga_bathy_utm.nc -Goga_bathy.nc -I -C -F
 grdimage oga_bathy.nc -Cbathy.cpt $prj $rgn -Y4i -K > $outfile
@@ -194,7 +200,8 @@ psbasemap -R -J -B0 -O >> $outfile
 psconvert $outfile -A0.5 -P
 eog sill_stat_hist.jpg
 }
-sill_stat_hist
+# sill_stat_hist
+
 
 vert_der()
 {
@@ -836,5 +843,82 @@ seismic_image()
   eog seis_OGA_A012.png
 }
 # seismic_image
+
+combo_binned_diam_em_tr()
+{
+  # Dataset maps x3, and in 4th panel add legend + add extra symbols, eg igneous centres and regional faults. Add text to map eg rosemary bank - Get OGA grav and mag data.
+  gmtset FONT_TITLE 14p,Helvetica,black MAP_TITLE_OFFSET -10p
+  datadir="/home/murray/Documents/Work/rockall_potential_fields/Rockall_Trough/Processed/grids/geotiff/"
+  outfile="combo_diam_em_tr.jpg.ps"
+  prj="-JM2.5i"
+  # rgn=`gmtinfo -I0.1 $linefile`
+  rgn=-R-14/-5/56/60.3
+  grdconvert ${datadir}bathymetry.tif oga_bathy_utm.nc
+  grdproject $rgn -Ju29/1:1 oga_bathy_utm.nc -Goga_bathy.nc -I -C -F
+  makecpt -T0/2500/0.1 -I -Cabyss -Z -D > bathy.cpt
+  makecpt -T0/2.5/0.01 -I -Cabyss -Z -D > bathy2.cpt
+  # Make sill file
+  awk -F"," '{if(NR>1)print $4,$5,$2/1000.0,$3,$7}' ${file} > temp_sills_whitespace.txt
+  # Convert sills into latlon
+  cat temp_sills_whitespace.txt | mapproject -Ju+29/1:1 -I -C -F > sills_x_y_diam_emdepth_trans.txt
+  # Make cpt for sill colour
+  makecpt -T0/20/2.5 -D -Crainbow > diam.cpt
+  # Diameter map
+  grdimage oga_bathy.nc -Cbathy.cpt $prj $rgn -Y4.5i -K > $outfile
+  grdcontour oga_bathy.nc -C250 $prj $rgn -Wgray10 -K -O >> $outfile
+  pscoast $prj $rgn -Di -Gblack -K -O >> $outfile
+  # psscale -D2.65i/0.35i+w-1.5i/0.15i+e -Cbathy2.cpt -B1+l"Bathymetry (km)" -K -O >> $outfile
+  psxy $prj $rgn faults_misc.gmt -Sf0.25/0.25+r+f -W1,red -K -O >> $outfile
+  psxy $prj $rgn folds_tuitt.gmt -Sf0.2/0.05+t -Gred -W1,red -K -O >> $outfile
+  psxy $prj $rgn volc_tuitt.gmt -St0.2 -Gred -Wred -K -O >> $outfile
+  psxy $prj $rgn $linefile -gd5k -K -O >> $outfile
+  psxy $prj $rgn sills_x_y_diam_emdepth_trans.txt -Sc0.05 -Cdiam.cpt -Wblack -i0,1,2 -K -O >> $outfile
+  echo "a" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -Bx2 -By2 -BW+t"Diameter (km)" -K -O >> $outfile
+  psbasemap $prj $rgn -B0 -O -K >> $outfile
+
+  # Emplacement depth
+  grdimage oga_bathy.nc -Cbathy.cpt $prj $rgn  -X2.6i -K -O >> $outfile
+  grdcontour oga_bathy.nc -C250 $prj $rgn -Wgray10 -K -O >> $outfile
+  pscoast $prj $rgn -Di -Gblack -K -O >> $outfile
+  psscale -D2.75i/0.35i+w-1.5i/0.15i+e -Cbathy2.cpt -B1+l"Bathymetry (km)" -K -O >> $outfile
+  psxy $prj $rgn faults_misc.gmt -Sf0.25/0.25+r+f -W1,red -K -O >> $outfile
+  psxy $prj $rgn folds_tuitt.gmt -Sf0.2/0.05+t -Gred -W1,red -K -O >> $outfile
+  psxy $prj $rgn volc_tuitt.gmt -St0.2 -Gred -Wred -K -O >> $outfile
+  psxy $prj $rgn $linefile -gd5k -K -O >> $outfile
+  psxy $prj $rgn sills_x_y_diam_emdepth_trans.txt -Sc0.05 -Cemd.cpt -Wblack -i0,1,3 -K -O >> $outfile
+  echo "b" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -Bx2 -By2 -BS+t"Emplacement depth (km)" -K -O >> $outfile
+  psbasemap $prj $rgn -B0 -K -O >> $outfile
+
+
+  # Transgressive height
+  grdimage oga_bathy.nc -Cbathy.cpt $prj $rgn -X-2.6i -Y-2.75i -K -O >> $outfile
+  grdcontour oga_bathy.nc -C250 $prj $rgn -Wgray10 -K -O >> $outfile
+  pscoast $prj $rgn -Di -Gblack -K -O >> $outfile
+  # psscale -D2.65i/0.35i+w-1.5i/0.15i+e -Cbathy2.cpt -B1+l"Bathymetry (km)" -K -O >> $outfile
+  psxy $prj $rgn faults_misc.gmt -Sf0.25/0.25+r+f -W1,red -K -O >> $outfile
+  psxy $prj $rgn folds_tuitt.gmt -Sf0.2/0.05+t -Gred -W1,red -K -O >> $outfile
+  psxy $prj $rgn volc_tuitt.gmt -St0.2 -Gred -Wred -K -O >> $outfile
+  psxy $prj $rgn $linefile -gd5k -K -O >> $outfile
+  psxy $prj $rgn sills_x_y_diam_emdepth_trans.txt -Sc0.05 -Cth.cpt -Wblack -i0,1,4 -K -O >> $outfile
+  echo "c" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -Bx2 -By2 -BWS+t"Transgressive height (km)" -K -O >> $outfile
+  psbasemap $prj $rgn -B0 -K -O >> $outfile
+
+
+
+  # Legend
+  echo "B diam.cpt 0i 0.15i+ef -B5+l\"Sill diameter (km)\"
+  G 2l
+  B emd.cpt 0i 0.15i+ef -B2+l\"Emplacement depth (km)\"
+  G 2l
+  B th.cpt 0i 0.15i+ef -B0.5+l\"Transgressive height (km)\" "> leg.txt
+  pslegend leg.txt -Dx2.75i/0.1i+w2.25i -O >> $outfile
+
+  gmtset FONT_TITLE 24p,Helvetica,black MAP_TITLE_OFFSET 14p
+
+
+  convert -trim -rotate 90 -bordercolor white -border 30x30 -quality 100 -density 600 $outfile combo_diam_em_tr.jpg
+  eog combo_diam_em_tr.jpg
+}
+combo_binned_diam_em_tr
 
 exit
