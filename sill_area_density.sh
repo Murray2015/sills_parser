@@ -212,6 +212,9 @@ plot_stat stats_uq.txt 1 blue
 plot_stat stats_upper.txt 1 violet
 echo "a" | pstext -J -R -F+cTR -C35% -W1.5 -D-0.3 -Gwhite -K -O >> $outfile
 pshistogram temp_sills_whitespace.txt -JX2.5i -R0/40/0/150 -W1 -Bx10+l"Diameter (km)" -By50+l"Frequency" -BSWne -Gblack -i0 -O -K >> $outfile
+pshistogram jackson_sills.txt -J -R0/40/0/50 -W2 -L0.5,red -i0 -S -Z1 -K -O >> $outfile
+pshistogram magee_sills.txt -J -R0/40/0/50 -W2 -L0.5,green -i0 -S -Z1 -K -O >> $outfile
+pshistogram reynolds_sills.txt -J -R0/40/0/50 -W2 -L0.5,blue -i0 -S -Z1 -K -O >> $outfile
 psbasemap -R -J -B0 -K -O >> $outfile
 pshistogram temp_sills_whitespace.txt -JX2.5i  -R0/5/0/150 -W0.1 -Bx1+l"Transgressive height (km)" -BsNwe -Gblack -i2 -X2.5i -K -O >> $outfile
 plot_stat stats_lower.txt 3 red
@@ -222,6 +225,7 @@ plot_stat stats_uq.txt 3 blue
 plot_stat stats_upper.txt 3 violet
 echo "b" | pstext -R -J -F+cTR -C35% -W1.5 -D-0.3 -Gwhite -K -O >> $outfile
 pshistogram temp_sills_whitespace.txt -JX2.5i  -R0/5/0/150 -W0.1 -Bx1+l"Transgressive height (km)" -BsNwe -Gblack -i2 -K -O >> $outfile
+pshistogram magee_sills.txt -J -R0/5/0/70 -W0.2 -L0.5,green -i2 -S -Z1 -K -O >> $outfile
 psbasemap -R -J -B0 -K -O >> $outfile
 pshistogram temp_sills_whitespace.txt -JX2.5i -R0/10/0/150 -W0.1 -Bx2+l"Emplacement depth (km)" -BSwne -Gblack -i1 -X2.5i -K -O >> $outfile
 plot_stat stats_lower.txt 2 red
@@ -232,11 +236,14 @@ plot_stat stats_uq.txt 2 blue
 plot_stat stats_upper.txt 2 violet
 echo "c" | pstext -J -R -F+cTR -C35% -W1.5 -D-0.3 -Gwhite -K -O >> $outfile
 pshistogram temp_sills_whitespace.txt -JX2.5i -R0/10/0/150 -W0.1 -Bx2+l"Emplacement depth (km)" -BSwne -Gblack -i1 -K -O >> $outfile
+pshistogram jackson_sills.txt -J -R0/10/0/50 -W0.2 -L0.5,red -i1 -S -Z1 -K -O >> $outfile
+pshistogram magee_sills.txt -J -R0/10/0/50 -W0.2 -L0.5,green -i1 -S -Z1 -K -O >> $outfile
+pshistogram reynolds_sills.txt -J -R0/10/0/50 -W0.2 -L0.5,blue -i1 -S -Z1 -K -O >> $outfile
 psbasemap -R -J -B0 -O >> $outfile
 psconvert $outfile -A0.5 -P
 eog sill_stat_hist.jpg
 }
-# sill_stat_hist
+sill_stat_hist
 
 
 vert_der()
@@ -978,8 +985,9 @@ crustal_thickness_map()
   grdcontour crustal_thickness.nc $prj $rgn -C1 -K -O >> $outfile
   psscale $rgn $prj -D2.75i/0.1i+w2i/0.25i+e -B5+l"Seafloor to moho thickness (km)" -Cthickness.cpt -K -O >> $outfile
   psxy sills_x_y_diam_emdepth_trans.txt $prj $rgn -Sc0.05 -Gwhite -W0.1 -i0,1 -O >> $outfile
-  evince $outfile
+  psconvert -A0.5 $outfile
+  eog crustal_thickness_map.jpg
 }
-crustal_thickness_map
+# crustal_thickness_map
 
 exit
