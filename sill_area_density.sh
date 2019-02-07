@@ -10,15 +10,49 @@ misc="-Bx2 -By2 -BSWne"
 gmtset FONT_LABEL 12p,Helvetica,black
 gmtset FONT_ANNOT_PRIMARY 12p,Helvetica,black
 
+cat << EOF > tmp_plume_centres.txt
+-11.25 64.4 WM89
+-16.8 68.8 LM94
+-18 59 JW03
+-16 59 JM06g
+-16 60 JM06v
+-14 62 Nea09
+-7 62 Faroe
+EOF
+
 rockall_basemap()
 {
   outfile="basemap_sills.ps"
   prj="-JM2.5i"
   rgn=-R-14/-5/56/60.3
+  rgn2=-R-40/20/40/70
   # Make cpt for sill colour
   makecpt -T-10000/12000/100 -Z -D -Cetopo1 > etopo_rock.cpt
   makecpt -T-10/10/0.1 -Z -D -Cetopo1 > etopo_rock2.cpt
-  grdimage ../global_data/ETOPO1_Ice_g_gmt4.grd -Cetopo1 $prj $rgn -P -Bx2 -By2 -BSWne -K > $outfile
+  pscoast $prj $rgn2 -Bx10 -By10 -BSWne -Dl -Gblack -Swhite -P -K > $outfile
+  psxy tmp_plume_centres.txt $prj $rgn2 -Ss0.2 -Gred -Wred -K -O >> $outfile
+  sed -n 1p tmp_plume_centres.txt | pstext $prj $rgn2 -D0.25i/0.1iv -F+f8p,Helvetica -K -O >> $outfile
+  sed -n 2p tmp_plume_centres.txt | pstext $prj $rgn2 -D-0.2i/-0.1iv -F+f8p,Helvetica -K -O >> $outfile
+  sed -n 3p tmp_plume_centres.txt | pstext $prj $rgn2 -D-0.2i/0.1iv -F+f8p,Helvetica -K -O >> $outfile
+  sed -n 4p tmp_plume_centres.txt | pstext $prj $rgn2 -D-0.2i/-0.1iv -F+f8p,Helvetica -K -O >> $outfile
+  sed -n 5p tmp_plume_centres.txt | pstext $prj $rgn2 -D-0.2i/0.15iv -F+f8p,Helvetica -K -O >> $outfile
+  sed -n 6p tmp_plume_centres.txt | pstext $prj $rgn2 -D0.2i/-0.09iv -F+f8p,Helvetica -K -O >> $outfile
+  sed -n 7p tmp_plume_centres.txt | pstext $prj $rgn2 -D0.2i/0.1iv -F+f8p,Helvetica -K -O >> $outfile
+  echo "-14 60.3
+  -14 56
+  -5 56
+  -5 60.3
+  -14 60.3" | psxy $prj $rgn2 -L -W0.5,red -K -O >> $outfile
+  psbasemap $prj $rgn2 -B0 -K -O >> $outfile
+  # psbasemap $prj $rgn -DjBL+w0.5i+o0.15i/0.1i+stmp -F+gwhite+p1p+c0.1c -K -O >> $outfile
+  # read x0 y0 w h < tmp
+  # gmt pscoast -Rg -JG0/50N/$w -Da -Gblack -A5000 -Bg -Wfaint -O -K -X$x0 -Y$y0 >> $outfile
+  # echo "-14 56
+  # -14 60.3
+  # -5 60.3
+  # -5 56
+  # -14 56" | gmt psxy -Wred -Gred -R -J -O -K >> $outfile
+  grdimage ../global_data/ETOPO1_Ice_g_gmt4.grd -Cetopo1 $prj $rgn -X3i -Bx2 -By2 -BSWne -K -O >> $outfile
   grdcontour ../global_data/ETOPO1_Ice_g_gmt4.grd -C500 $prj $rgn -Wgray10 -K -O >> $outfile
   psscale -D2.65i/0.35i+w1.5i/0.15i+e -Cetopo_rock2.cpt -B4+l"Topography (km)" -K -O >> $outfile
   psxy $prj $rgn $linefile -gd5k -W0.2,darkred -K -O >> $outfile
@@ -29,23 +63,26 @@ rockall_basemap()
   echo "-10.5 56.3 Hebrides Terrace" | pstext -J -R -K -F+f8p,Helvetica,black -O >> $outfile
   psxy well_location.txt -J -R -S+0.12i -Gblack -K -O >> $outfile
   psxy well_location.txt -J -R -Sc0.06i -Gblack -K -O >> $outfile
-  for i in `seq 1 17`
-  do
-  awk -v i=$i '{if(NR==i)print $0}' well_location.txt | pstext -J -R -F+f6,Helvetica,black -D0.2i/0i -K -O >> $outfile
-  done
-  psbasemap $prj $rgn -B0 -K -O >> $outfile
-  psbasemap $prj $rgn -DjBR+w0.5i+o0.15i/0.1i+stmp -F+gwhite+p1p+c0.1c -K -O >> $outfile
-  read x0 y0 w h < tmp
-  gmt pscoast -Rg -JG0/50N/$w -Da -Gblack -A5000 -Bg -Wfaint -O -K -X$x0 -Y$y0 >> $outfile
-  echo "-14 56
-  -14 60.3
-  -5 60.3
-  -5 56
-  -14 56" | gmt psxy -Wred -Gred -R -J -O -K >> $outfile
+  # for i in `seq 1 17`
+  # do
+  # awk -v i=$i '{if(NR==i)print $0}' well_location.txt | pstext -J -R -F+f6,Helvetica,black -D0.2i/0i -K -O >> $outfile
+  # done
+  sed -n 5p well_location.txt | pstext -J -R -F+f6,Helvetica,black -D-0.2i/0i -K -O >> $outfile
+  sed -n 6p well_location.txt | pstext -J -R -F+f6,Helvetica,black -D0.25i/-0.02i -K -O >> $outfile
+  sed -n 7p well_location.txt | pstext -J -R -F+f6,Helvetica,black -D0.2i/0.02i -K -O >> $outfile
+  sed -n 8p well_location.txt | pstext -J -R -F+f6,Helvetica,black -D0.25i/0i -K -O >> $outfile
+  sed -n 11p well_location.txt | pstext -J -R -F+f6,Helvetica,black -D0.25i/-0.01i -K -O >> $outfile
+  sed -n 12p well_location.txt | pstext -J -R -F+f6,Helvetica,black -D0.2i/-0.04i -K -O >> $outfile
+  sed -n 13p well_location.txt | pstext -J -R -F+f6,Helvetica,black -D0.25i/0i -K -O >> $outfile
+  sed -n 14p well_location.txt | pstext -J -R -F+f6,Helvetica,black -D0.25i/0i -K -O >> $outfile
+
+
+
+  psbasemap $prj $rgn -B0 -O >> $outfile
   convert -trim -bordercolor white -border 30x30 -quality 100 -density 600 $outfile basemap_sills.png
   eog basemap_sills.png
 }
-# rockall_basemap
+rockall_basemap
 
 
 sill_area_density()
@@ -919,6 +956,8 @@ combo_binned_diam_em_tr()
   convert -trim -rotate 90 -bordercolor white -border 30x30 -quality 100 -density 600 $outfile combo_diam_em_tr.jpg
   eog combo_diam_em_tr.jpg
 }
-combo_binned_diam_em_tr
+# combo_binned_diam_em_tr
+
+
 
 exit
