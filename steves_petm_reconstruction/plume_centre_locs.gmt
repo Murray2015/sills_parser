@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash 
 
 OUT=./plume_centre_locs.ps
 
@@ -8,7 +8,7 @@ FEATURE_DIR=.
 # MAP AREA
 
 REGION_MAP=-21/51/20/70r
-MAP_WIDTH=10
+MAP_WIDTH=3.7
 SCALE_MAP=E-17/64.5/$MAP_WIDTH
 
 # MAP HEIGHT
@@ -43,7 +43,7 @@ OBLIQUE_ORIGIN=(`echo "0 0" | project -T$ORIGINX/$ORIGINY -C$CENTREY/$CENTREY -F
 
 
 gmt gmtset MAP_FRAME_TYPE plain
-
+	
 
 
 
@@ -59,7 +59,7 @@ $MAP_WIDTH	$MAP_HEIGHT
 EOF
 
 # MAXIMUM AREA OF MODERATELY TO HEAVILY INTRUDED CRUST
-#gmt psxy $FEATURE_DIR/deep_basin_chain_plot.xy -R$REGION_MAP -J$SCALE_MAP -G225 -K -O >> $OUT
+gmt psxy $FEATURE_DIR/deep_basin_chain_plot.xy -R$REGION_MAP -J$SCALE_MAP -G225 -K -O >> $OUT
 
 # COASTLINES (EUROPEAN REFERENCE FRAME, CHRON 24)
 gmt psxy $FEATURE_DIR/coast_eur \
@@ -68,14 +68,28 @@ gmt psxy $FEATURE_DIR/coast_eur \
    $FEATURE_DIR/coast_faroe.xy -R$REGION_MAP -J$SCALE_MAP -W0.5p,128 -K -O >> $OUT 
 
 # STRATIGRAPHIC SECTIONS
-psxy -R$REGION_MAP -J$SCALE_MAP -Ss0.4 -Gskyblue2 -K -O <<EOF >> $OUT 
+psxy -R$REGION_MAP -J$SCALE_MAP -Ss0.2 -Gskyblue2 -K -O <<EOF >> $OUT 
 1.5 60
 -4.5 60.5
 EOF
 
+echo "-14 60.3
+  -14 56
+  -5 56
+  -5 60.3
+  -14 60.3" | psxy -R -J -L -W1,red -K -O >> $OUT
+
+sed -n 1p ../tmp_plume_centres.txt | pstext -R -J -D0.15i/0.1iv -F+f8p,Helvetica -K -O >> $OUT
+  sed -n 2p ../tmp_plume_centres.txt | pstext -R -J -D0i/-0.1iv -F+f8p,Helvetica -K -O >> $OUT
+  sed -n 3p ../tmp_plume_centres.txt | pstext -R -J -D-0.05i/0.2iv -F+f8p,Helvetica -K -O >> $OUT
+  sed -n 4p ../tmp_plume_centres.txt | pstext -R -J -D-0.05i/-0.15iv -F+f8p,Helvetica -K -O >> $OUT
+  sed -n 5p ../tmp_plume_centres.txt | pstext -R -J -D-0.1i/0.2iv -F+f8p,Helvetica -K -O >> $OUT
+  sed -n 6p ../tmp_plume_centres.txt | pstext -R -J -D0.1i/-0.09iv -F+f8p,Helvetica -K -O >> $OUT
+
+
 
 # PLUME CENTRES
-psxy -R$REGION_MAP -J$SCALE_MAP -Gred -Sc0.3 -Bx5 -By5 -O <<EOF >> $OUT
+psxy -R$REGION_MAP -J$SCALE_MAP -Gred -Sc0.15 -Bx5 -By5 -BSWne -K -O <<EOF >> $OUT
 -11.25	64.4	WM89
 -16.8	68.8	LM94
 -18		59		JW03
@@ -84,10 +98,41 @@ psxy -R$REGION_MAP -J$SCALE_MAP -Gred -Sc0.3 -Bx5 -By5 -O <<EOF >> $OUT
 -14		62		Nea09
 EOF
 
+  echo "a" | pstext -R -J -F+cBL -C25% -W1.5 -D0.2 -Gwhite  -K -O >> $OUT
 
 
+  prj="-JM2.5i"
+  rgn=-R-14/-5/56/60.3
+file="../oga_output_trans_decomp.csv"
+linefile="../Rockall-UK_coords_geog.txt"
+misc="-Bx2 -By2 -BSWne"
+  grdimage ../../global_data/ETOPO1_Ice_g_gmt4.grd -Cetopo1 $prj $rgn -X1.9i -Bx2 -By2 -BSwnE -K -O >> $OUT
+  grdcontour ../../global_data/ETOPO1_Ice_g_gmt4.grd -C500 $prj $rgn -Wgray10 -K -O >> $OUT
+  psscale -D3i/0.35i+w1.5i/0.15i+e -C../etopo_rock2.cpt -B4+l"Topography (km)" -K -O >> $OUT
+  psxy $prj $rgn $linefile -gd5k -W0.2,darkred -K -O >> $OUT
+  psxy $prj $rgn ../volc_tuitt.gmt -St0.2 -Gred -Wred -K -O >> $OUT
+  echo "-12 58 Rockall Basin" | pstext -J -R -F+a75 -K -O >> $OUT
+  echo "-10 59 Rosemary Bank" | pstext -J -R -F+f8p,Helvetica,black -K -O >> $OUT
+  echo "-11 57.3 Anton Dohrn" | pstext -J -R -K -F+f8p,Helvetica,black -O >> $OUT
+  echo "-10.5 56.3 Hebrides Terrace" | pstext -J -R -K -F+f8p,Helvetica,black -O >> $OUT
+  psxy ../well_location.txt -J -R -S+0.12i -Gblack -K -O >> $OUT
+  psxy ../well_location.txt -J -R -Sc0.06i -Gblack -K -O >> $OUT
+  # for i in `seq 1 17`
+  # do
+  # awk -v i=$i '{if(NR==i)print $0}' well_location.txt | pstext -J -R -F+f6,Helvetica,black -D0.2i/0i -K -O >> $OUT
+  # done
+  sed -n 5p ../well_location.txt | pstext -J -R -F+f6,Helvetica,black -D-0.2i/0i -K -O >> $OUT
+  sed -n 6p ../well_location.txt | pstext -J -R -F+f6,Helvetica,black -D0.25i/-0.02i -K -O >> $OUT
+  sed -n 7p ../well_location.txt | pstext -J -R -F+f6,Helvetica,black -D0.2i/0.02i -K -O >> $OUT
+  sed -n 8p ../well_location.txt | pstext -J -R -F+f6,Helvetica,black -D0.25i/0i -K -O >> $OUT
+  sed -n 11p ../well_location.txt | pstext -J -R -F+f6,Helvetica,black -D0.25i/-0.01i -K -O >> $OUT
+  sed -n 12p ../well_location.txt | pstext -J -R -F+f6,Helvetica,black -D0.2i/-0.04i -K -O >> $OUT
+  sed -n 13p ../well_location.txt | pstext -J -R -F+f6,Helvetica,black -D0.25i/0i -K -O >> $OUT
+  sed -n 14p ../well_location.txt | pstext -J -R -F+f6,Helvetica,black -D0.25i/0i -K -O >> $OUT
+  echo "b" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite  -K -O >> $OUT
+  psbasemap $prj $rgn -B0 -O >> $OUT
+  convert -trim -bordercolor white -border 30x30 -quality 100 -density 600 $OUT basemap_sills.png
+  eog basemap_sills.png
 
-psconvert $OUT -Tf
-psconvert $OUT -A -E300 -Qt4 -Qg4 -Tg
-evince plume_centre_locs.pdf
+
 exit
