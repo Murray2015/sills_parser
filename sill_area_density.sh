@@ -43,6 +43,7 @@ rockall_basemap()
   -5 56
   -5 60.3
   -14 60.3" | psxy $prj $rgn2 -L -W0.5,red -K -O >> $outfile
+  echo "a" | pstext $prj $rgn2 -F+cBL -C25% -W1.5 -D0.2 -Gwhite  -K -O >> $outfile
   psbasemap $prj $rgn2 -B0 -K -O >> $outfile
   # psbasemap $prj $rgn -DjBL+w0.5i+o0.15i/0.1i+stmp -F+gwhite+p1p+c0.1c -K -O >> $outfile
   # read x0 y0 w h < tmp
@@ -75,14 +76,12 @@ rockall_basemap()
   sed -n 12p well_location.txt | pstext -J -R -F+f6,Helvetica,black -D0.2i/-0.04i -K -O >> $outfile
   sed -n 13p well_location.txt | pstext -J -R -F+f6,Helvetica,black -D0.25i/0i -K -O >> $outfile
   sed -n 14p well_location.txt | pstext -J -R -F+f6,Helvetica,black -D0.25i/0i -K -O >> $outfile
-
-
-
+  echo "b" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite  -K -O >> $outfile
   psbasemap $prj $rgn -B0 -O >> $outfile
   convert -trim -bordercolor white -border 30x30 -quality 100 -density 600 $outfile basemap_sills.png
   eog basemap_sills.png
 }
-rockall_basemap
+# rockall_basemap
 
 
 sill_area_density()
@@ -959,5 +958,28 @@ combo_binned_diam_em_tr()
 # combo_binned_diam_em_tr
 
 
+crustal_thickness_map()
+{
+  datadir="/home/murray/Documents/Work/rockall_potential_fields/Rockall_Trough/Processed/grids/geotiff/"
+  outfile="crustal_thickness_map.ps"
+  prj="-JM2.5i"
+  # rgn=`gmtinfo -I0.1 $linefile`
+  rgn=-R-14/-5/56/60.3
+  grdconvert ${datadir}bathymetry.tif oga_bathy_utm.nc
+  grdproject $rgn -Ju29/1:1 oga_bathy_utm.nc -Goga_bathy.nc -I -C -F
+  grdmath oga_bathy.nc 1000 DIV -4.82956 MUL 25.8269 ADD = crustal_thickness.nc
+  # Make sill file
+  awk -F"," '{if(NR>1)print $4,$5,$2/1000.0,$3,$7}' ${file} > temp_sills_whitespace.txt
+  # Convert sills into latlon
+  cat temp_sills_whitespace.txt | mapproject -Ju+29/1:1 -I -C -F > sills_x_y_diam_emdepth_trans.txt
+  # Crustal thickness map
+  makecpt -Cviridis -T10/25/0.2 -D -Z -Mwhite > thickness.cpt
+  grdimage crustal_thickness.nc -Cthickness.cpt $prj $rgn -Bx2 -By2 -BSWne -P -K > $outfile
+  grdcontour crustal_thickness.nc $prj $rgn -C1 -K -O >> $outfile
+  psscale $rgn $prj -D2.75i/0.1i+w2i/0.25i+e -B5+l"Seafloor to moho thickness (km)" -Cthickness.cpt -K -O >> $outfile
+  psxy sills_x_y_diam_emdepth_trans.txt $prj $rgn -Sc0.05 -Gwhite -W0.1 -i0,1 -O >> $outfile
+  evince $outfile
+}
+crustal_thickness_map
 
 exit
