@@ -858,7 +858,7 @@ EOF
 convert -trim -rotate 90 -bordercolor white -border 30x30 -quality 100 -density 600 $outfile multi_map_all_sills.jpg
 eog multi_map_all_sills.jpg
 }
-multi_map_all_sills
+# multi_map_all_sills
 
 
 seismic_image()
@@ -993,15 +993,60 @@ crustal_thickness_map()
   awk -F"," '{if(NR>1)print $4,$5,$2/1000.0,$3,$7}' ${file} > temp_sills_whitespace.txt
   # Convert sills into latlon
   cat temp_sills_whitespace.txt | mapproject -Ju+29/1:1 -I -C -F > sills_x_y_diam_emdepth_trans.txt
+
+  # Bathymetry map
+  makecpt -T0/2500/0.1 -I -Crainbow -Z -D > bathy.cpt
+  makecpt -T0/2.5/0.01 -I -Crainbow -Z -D > bathy2.cpt
+  grdconvert ${datadir}bathymetry.tif oga_bathy_utm.nc
+  grdproject $rgn -Ju29/1:1 oga_bathy_utm.nc -Goga_bathy.nc -I -C -F
+  grdimage oga_bathy.nc -Cbathy.cpt $prj $rgn -P -Y4i -K > $outfile
+  grdcontour oga_bathy.nc -C250 $prj $rgn -Wgray10 -K -O >> $outfile
+  pscoast $prj $rgn -Di -Gblack -K -O >> $outfile
+  psscale -D2.75i/0.15i+w-2i/0.15i+e -Cbathy2.cpt -B1+l"Bathymetry (km)" -K -O >> $outfile
+  psxy $prj $rgn faults_misc.gmt -Sf0.25/0.25+r+f -W1,red -K -O >> $outfile
+  psxy $prj $rgn folds_tuitt.gmt -Sf0.2/0.05+t -Gred -W1,red -K -O >> $outfile
+  psxy $prj $rgn volc_tuitt.gmt -St0.2 -Gred -Wred -K -O >> $outfile
+  psxy $prj $rgn $linefile -gd5k -Bx2 -By2 -BW -K -O >> $outfile
+  psbasemap $prj $rgn -B0 -K -O >> $outfile
+  psxy $prj $rgn sills_geog.txt -Sc0.05 -Gwhite -Wblack -K -O >> $outfile
+  echo "a" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -K -O >> $outfile
+
   # Crustal thickness map
   makecpt -Cviridis -T10/25/0.2 -D -Z -Mwhite > thickness.cpt
-  grdimage crustal_thickness.nc -Cthickness.cpt $prj $rgn -Bx2 -By2 -BSWne -P -K > $outfile
+  grdimage crustal_thickness.nc -Cthickness.cpt $prj $rgn -Bx2 -By2 -BSwne -P -X3.6i -K -O >> $outfile
   grdcontour crustal_thickness.nc $prj $rgn -C1 -K -O >> $outfile
-  psscale $rgn $prj -D2.75i/0.1i+w2i/0.25i+e -B5+l"Seafloor to moho thickness (km)" -Cthickness.cpt -K -O >> $outfile
-  psxy sills_x_y_diam_emdepth_trans.txt $prj $rgn -Sc0.05 -Gwhite -W0.1 -i0,1 -O >> $outfile
+  psscale $rgn $prj -D2.75i/0.15i+w2i/0.15i+e -B5+l"Seafloor to moho thickness (km)" -Cthickness.cpt -K -O >> $outfile
+  psxy sills_x_y_diam_emdepth_trans.txt $prj $rgn -Sc0.05 -Gwhite -W0.1 -i0,1 -K -O >> $outfile
+  echo "b" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -K -O >> $outfile
+
+  # Scatter graph
+  psxy all_crustalthickness.txt -R0/5/2/35 -JX2.5i/2i -Sc0.1 -Gblack -Bx1+l"Seafloor depth (km)" -By10+l"Crustal thickness (km)" -P -BSWne -i0,2 -X-3.6i -Y-2.5i -K -O >> $outfile
+  makecpt -Crainbow -T1/11/1 > scatter.cpt
+  counter=1
+  for i in `ls *moho_crustalthickness.txt`
+  do
+  col=`cat scatter.cpt | awk -v counter=$counter '{if(NR==counter+1) print $2}' `
+  echo $counter $col
+  psxy $i -G${col} -Sc0.1 -W${col} -J -R -i0,2 -K -O >> $outfile
+  ((counter++))
+  done
+  echo "S 0.1i c 0.1i 283.33-1-1 0.25p 0.3i Funck et al. 2017 RAPIDS-1
+  S 0.1i c 0.1i 250-1-1 0.25p 0.3i Hauser et al. 1995 n-s RAPIDS
+  S 0.1i c 0.1i 216.67-1-1 0.25p 0.3i Klingelhofer et al. 2005 line D
+  S 0.1i c 0.1i 183.33-1-1 0.25p 0.3i Klingelhofer et al. 2005 line E
+  S 0.1i c 0.1i 150-1-1 0.25p 0.3i Morewood et al. 2005 RAPIDS-31
+  S 0.1i c 0.1i 116.67-1-1 0.25p 0.3i Morewood et al. 2005 RAPIDS-33
+  S 0.1i c 0.1i 83.333-1-1 0.25p 0.3i Morewood et al. 2005 RAPIDS-34
+  S 0.1i c 0.1i 50-1-1 0.25p 0.3i Roberts et al. 1988 profile 1
+  S 0.1i c 0.1i 16.667-1-1 0.25p 0.3i Roberts et al. 1988 profile 5" > leg.txt
+  pslegend leg.txt -Dx3.5i/0.1i+w2i -R -J -K -O  >> $outfile
+  psxy -R -J points_regressed.txt -L+d+p2,pink -W2,red -i0,2,3 -K -O >> $outfile
+  psbasemap -J -R -B0 -K -O >> $outfile
+  echo "c" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -O >> $outfile
+
   psconvert -A0.5 $outfile
   eog crustal_thickness_map.jpg
 }
-# crustal_thickness_map
+crustal_thickness_map
 
 exit
