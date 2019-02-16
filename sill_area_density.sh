@@ -20,6 +20,9 @@ cat << EOF > tmp_plume_centres.txt
 -7 62 Faroe
 EOF
 
+ogr2ogr -F "GMT" basalt_1.gmt basalt_1.shp
+mapproject basalt_1.gmt -Ju+28/1:1 -I -C -F > basalt.txt
+
 rockall_basemap()
 {
   outfile="basemap_sills.ps"
@@ -243,7 +246,7 @@ psbasemap -R -J -B0 -O >> $outfile
 psconvert $outfile -A0.5 -P
 eog sill_stat_hist.jpg
 }
-sill_stat_hist
+# sill_stat_hist
 
 
 vert_der()
@@ -383,6 +386,7 @@ pot_der_4()
   psxy $prj $rgn $linefile -gd5k -Bx2 -By2 -BW -K -O >> $outfile
   psbasemap $prj $rgn -B0 -K -O >> $outfile
   psxy $prj $rgn sills_geog.txt -Sc0.05 -Gwhite -Wblack -K -O >> $outfile
+  psxy basalt.txt $prj $rgn -Gp200/14:FdarkorangeB-  -K -O >> $outfile
   echo "a" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -K -O >> $outfile
 
   # Magnetic map
@@ -397,6 +401,7 @@ pot_der_4()
   psxy $prj $rgn $linefile -gd5k -K -O >> $outfile
   psbasemap $prj $rgn -B0 -K -O >> $outfile
   psxy $prj $rgn sills_geog.txt -Sc0.05 -Gwhite -Wblack -K -O >> $outfile
+  psxy basalt.txt $prj $rgn -Gp200/14:FdarkorangeB-  -K -O >> $outfile
   echo "b" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -K -O >> $outfile
 
   # Derivative maps of gravity and magnetic data, with extra lines of major faults, with sill counts overlain.
@@ -424,6 +429,7 @@ pot_der_4()
   psxy $prj $rgn $linefile -gd5k -Bx2 -By2 -BSW -K -O >> $outfile
   psbasemap $prj $rgn -B0 -K -O >> $outfile
   psxy $prj $rgn sills_geog.txt -Sc0.05 -Gwhite -Wblack -K -O >> $outfile
+  psxy basalt.txt $prj $rgn -Gp200/14:FdarkorangeB-  -K -O >> $outfile
   echo "c" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -K -O >> $outfile
 
   # Magnetic map
@@ -438,7 +444,8 @@ pot_der_4()
   psxy $prj $rgn $linefile -gd5k -Bx2 -By2 -BS -K -O >> $outfile
   psbasemap $prj $rgn -B0 -K -O >> $outfile
   psxy $prj $rgn sills_geog.txt -Sc0.05 -Gwhite -Wblack -K -O >> $outfile
-  echo "d" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -O >> $outfile
+  echo "d" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -K -O >> $outfile
+  psxy basalt.txt $prj $rgn -Gp200/14:FdarkorangeB- -O >> $outfile
   psconvert -A0.75 -P -E600 pot_deriv_maps_4.ps
   eog pot_deriv_maps_4.jpg
 }
@@ -804,6 +811,7 @@ psxy $prj $rgn folds_tuitt.gmt -Sf0.2/0.05+t -Gred -W1,red -K -O >> $outfile
 psxy $prj $rgn volc_tuitt.gmt -St0.2 -Gred -Wred -K -O >> $outfile
 psxy $prj $rgn $linefile -gd5k -K -O >> $outfile
 # psxy $prj $rgn sills_x_y_diam_emdepth_trans.txt -Sc0.05 -Cth.cpt -Wblack -i0,1,4 -K -O >> $outfile
+psxy basalt.txt $prj $rgn -Gp200/14:FdarkorangeB-  -K -O >> $outfile
 echo "a" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -Bx2 -By2 -BW -K -O >> $outfile
 psbasemap $prj $rgn -B0 -K -O >> $outfile
 
@@ -818,6 +826,7 @@ psxy $prj $rgn folds_tuitt.gmt -Sf0.2/0.05+t -Gred -W1,red -K -O >> $outfile
 psxy $prj $rgn volc_tuitt.gmt -St0.2 -Gred -Wred -K -O >> $outfile
 psxy $prj $rgn $linefile -gd5k -K -O >> $outfile
 # psxy $prj $rgn sills_x_y_diam_emdepth_trans.txt -Sc0.05 -Cth.cpt -Wblack -i0,1,4 -K -O >> $outfile
+psxy basalt.txt $prj $rgn -Gp200/14:FdarkorangeB-  -K -O >> $outfile
 echo "b" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -Bx2 -By2 -BS -K -O >> $outfile
 psbasemap $prj $rgn -B0 -K -O >> $outfile
 
@@ -832,6 +841,7 @@ psxy $prj $rgn folds_tuitt.gmt -Sf0.2/0.05+t -Gred -W1,red -K -O >> $outfile
 psxy $prj $rgn volc_tuitt.gmt -St0.2 -Gred -Wred -K -O >> $outfile
 psxy $prj $rgn $linefile -gd5k -K -O >> $outfile
 # psxy $prj $rgn sills_x_y_diam_emdepth_trans.txt -Sc0.05 -Cth.cpt -Wblack -i0,1,4 -K -O >> $outfile
+psxy basalt.txt $prj $rgn -Gp200/14:FdarkorangeB- -t50 -K -O >> $outfile
 echo "c" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -Bx2 -By2 -BSW -K -O >> $outfile
 psbasemap $prj $rgn -B0 -K -O >> $outfile
 
@@ -841,13 +851,14 @@ S 0.1i t 0.2i red red 0.5i Volcanic centre
 S 0.1i f0.25/0.5+r+f 0.2i red 1,red 0.5i Fault
 S 0.1i f0.2/0.05+t 0.2i red 1,red 0.5i Inversion structure
 S 0.1i - 0.2i black 1 0.5i Seismic line
+S 0.1i s 0.2i p200/14:FdarkorangeB- 0 0.5i Basalt
 S 0.1i c 0.05i white 0.5,black 0.5i Sill
 EOF
 
 convert -trim -rotate 90 -bordercolor white -border 30x30 -quality 100 -density 600 $outfile multi_map_all_sills.jpg
 eog multi_map_all_sills.jpg
 }
-# multi_map_all_sills
+multi_map_all_sills
 
 
 seismic_image()
@@ -916,6 +927,7 @@ combo_binned_diam_em_tr()
   psxy $prj $rgn volc_tuitt.gmt -St0.2 -Gred -Wred -K -O >> $outfile
   psxy $prj $rgn $linefile -gd5k -K -O >> $outfile
   psxy $prj $rgn sills_x_y_diam_emdepth_trans.txt -Sc0.05 -Cdiam.cpt -Wblack -i0,1,2 -K -O >> $outfile
+  psxy basalt.txt $prj $rgn -Gp200/14:FdarkorangeB-  -K -O >> $outfile
   echo "a" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -Bx2 -By2 -BW+t"Diameter (km)" -K -O >> $outfile
   psbasemap $prj $rgn -B0 -O -K >> $outfile
 
@@ -929,6 +941,7 @@ combo_binned_diam_em_tr()
   psxy $prj $rgn volc_tuitt.gmt -St0.2 -Gred -Wred -K -O >> $outfile
   psxy $prj $rgn $linefile -gd5k -K -O >> $outfile
   psxy $prj $rgn sills_x_y_diam_emdepth_trans.txt -Sc0.05 -Cemd.cpt -Wblack -i0,1,3 -K -O >> $outfile
+  psxy basalt.txt $prj $rgn -Gp200/14:FdarkorangeB-  -K -O >> $outfile
   echo "b" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -Bx2 -By2 -BS+t"Emplacement depth (km)" -K -O >> $outfile
   psbasemap $prj $rgn -B0 -K -O >> $outfile
 
@@ -943,6 +956,7 @@ combo_binned_diam_em_tr()
   psxy $prj $rgn volc_tuitt.gmt -St0.2 -Gred -Wred -K -O >> $outfile
   psxy $prj $rgn $linefile -gd5k -K -O >> $outfile
   psxy $prj $rgn sills_x_y_diam_emdepth_trans.txt -Sc0.05 -Cth.cpt -Wblack -i0,1,4 -K -O >> $outfile
+  psxy basalt.txt $prj $rgn -Gp200/14:FdarkorangeB-  -K -O >> $outfile
   echo "c" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -Bx2 -By2 -BWS+t"Transgressive height (km)" -K -O >> $outfile
   psbasemap $prj $rgn -B0 -K -O >> $outfile
 
