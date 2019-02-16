@@ -1009,6 +1009,7 @@ crustal_thickness_map()
   psxy $prj $rgn $linefile -gd5k -Bx2 -By2 -BW -K -O >> $outfile
   psbasemap $prj $rgn -B0 -K -O >> $outfile
   psxy $prj $rgn sills_geog.txt -Sc0.05 -Gwhite -Wblack -K -O >> $outfile
+  psxy basalt.txt $prj $rgn -Gp200/14:FdarkorangeB-  -K -O >> $outfile
   echo "a" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -K -O >> $outfile
 
   # Crustal thickness map
@@ -1017,6 +1018,7 @@ crustal_thickness_map()
   grdcontour crustal_thickness.nc $prj $rgn -C1 -K -O >> $outfile
   psscale $rgn $prj -D2.75i/0.15i+w2i/0.15i+e -B5+l"Seafloor to moho thickness (km)" -Cthickness.cpt -K -O >> $outfile
   psxy sills_x_y_diam_emdepth_trans.txt $prj $rgn -Sc0.05 -Gwhite -W0.1 -i0,1 -K -O >> $outfile
+  psxy basalt.txt $prj $rgn -Gp200/14:FdarkorangeB-  -K -O >> $outfile
   echo "b" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -K -O >> $outfile
 
   # Scatter graph
