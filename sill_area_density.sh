@@ -720,47 +720,50 @@ scatter_plot()
   # Sample mag, and remove tab separators
   grdtrack temp2 -Goga_rtpmaganomaly.nc | tr "\t" " " > sills_gmt_format_geog_sampled.txt
   # Rename header and tidy temp files
-  sed -i '1c midpoint_x midpoint_y bathy grav mag name diameter emplacement_depth transgressive_height' sills_gmt_format_geog_sampled.txt
+  sed -i '1c midpoint_x midpoint_y bathy grav mag name emplacement_depth transgressive_height' sills_gmt_format_geog_sampled.txt
   #rm temp1 temp2
 
-  ### Analysis continued in R
+  # Run in R
+  Rscript pairs_plot.R
 
+  # Display
+  eog rockall_sills_scatterplot_matrix.png
 }
-scatter_plot
+# scatter_plot
 
 
 grid_sill_vals()
 {
   rgn=-R-14/-5/56/60.3
   # Convert sills into GMT format. Note space removal from name with tr.
-  tr -d " " <  ${file} | awk -F"," '{if(NR==1)print "midpoint_x midpoint_y name diameter emplacement_depth transgressive_height"; else print $4,$5,$6,$2,$3,$7}' > sills_gmt_format.txt
+  tr -d " " <  ${file} | awk -F"," '{if(NR==1)print "#midpoint_x midpoint_y name diameter emplacement_depth transgressive_height"; else print $4,$5,$6,$2,$3,$7}' > sills_gmt_format.txt
   # Convert sills into latlon
   mapproject -Ju+29/1:1 -I -C -F sills_gmt_format.txt  > sills_gmt_format_geog.txt
-  sed -i '1c midpoint_x midpoint_y name diameter emplacement_depth transgressive_height' sills_gmt_format_geog.txt
+  sed -i '1c #midpoint_x midpoint_y name diameter emplacement_depth transgressive_height' sills_gmt_format_geog.txt
 
   # diameter no preprocess
   nearneighbor sills_gmt_format_geog.txt $rgn -fg -S20k -N3 -I10k -i0,1,3 -Gdiam_no_preproc.nc
   makecpt `grdinfo -T100 diam_no_preproc.nc` -Z -Crainbow > temp_diam.cpt
-  grdimage -JM6i -B2 diam_no_preproc.nc -Ctemp_diam.cpt -P -K > temp_diam.ps
+  grdimage -JM6i -B2 diam_no_preproc.nc -Ctemp_diam.cpt -B+t"Diameter no preprocess" -P -K > temp_diam.ps
   pscoast -J -R -Gblack -K -O >> temp_diam.ps
   psscale -J -R -D6.25i/3i/3i/0.25i -B1000 -Ctemp_diam.cpt -O >> temp_diam.ps
-  # evince temp_diam.ps
+  evince temp_diam.ps
 
   # em depth no preprocess
   nearneighbor sills_gmt_format_geog.txt $rgn -fg -S20k -N3 -I10k -i0,1,4 -Gemdepth_no_preproc.nc
   makecpt `grdinfo -T1 emdepth_no_preproc.nc` -Z -Crainbow > temp_em.cpt
-  grdimage -JM6i -B2 emdepth_no_preproc.nc -Ctemp_em.cpt -P -K > temp_em.ps
+  grdimage -JM6i -B2 emdepth_no_preproc.nc -Ctemp_em.cpt -B+t"Emplacement depth no preprocess" -P -K > temp_em.ps
   pscoast -J -R -Gblack -K -O >> temp_em.ps
   psscale -J -R -D6.5i/3i/3i/0.25i -Ctemp_em.cpt -O >> temp_em.ps
-  # evince temp_em.ps
+  evince temp_em.ps
 
   # th no proprocess
   nearneighbor sills_gmt_format_geog.txt $rgn -fg -S20k -N3 -I10k -i0,1,5 -Gth_no_preproc.nc
   makecpt `grdinfo -T0.5 th_no_preproc.nc` -Z -Crainbow > temp_th.cpt
-  grdimage -JM6i -B2 th_no_preproc.nc -Ctemp_th.cpt -P -K > temp_th.ps
+  grdimage -JM6i -B2 th_no_preproc.nc -Ctemp_th.cpt -B+t"Transgressive height no preprocess" -P -K > temp_th.ps
   pscoast -J -R -Gblack -K -O >> temp_th.ps
   psscale -J -R -D6.25i/3i/3i/0.25i -B1000 -Ctemp_diam.cpt -O >> temp_th.ps
-  # evince temp_th.ps
+  evince temp_th.ps
 
 
   # diameter with preprocess
@@ -768,28 +771,28 @@ grid_sill_vals()
   nearneighbor temp $rgn -fg -S20k -N3 -I5k  -Gdiam_with_preproc.nc
   grdmath diam_with_preproc.nc 1000 DIV = diam_with_preproc_km.nc
   makecpt `grdinfo -T100 diam_with_preproc.nc` -Z -Crainbow > temp_diam.cpt
-  grdimage -JM6i -B2 diam_with_preproc.nc -Ctemp_diam.cpt -P -K > temp_pre_diam.ps
+  grdimage -JM6i -B2 diam_with_preproc.nc -Ctemp_diam.cpt -B+t"Diameter with preprocess" -P -K > temp_pre_diam.ps
   pscoast -J -R -Gblack -K -O >> temp_pre_diam.ps
   psscale -J -R -D6.25i/3i/3i/0.25i -B1000 -Ctemp_diam.cpt -O >> temp_pre_diam.ps
-  # evince temp_pre_diam.ps
+  evince temp_pre_diam.ps
 
   # em depth with preprocess
   blockmean sills_gmt_format_geog.txt -i0,1,4 $rgn -I5k -fg > temp
   nearneighbor temp $rgn -fg -S20k -N3 -I5k -Gemdepth_with_preproc.nc
   makecpt `grdinfo -T1 emdepth_with_preproc.nc` -Z -Crainbow > temp_em.cpt
-  grdimage -JM6i -B2 emdepth_with_preproc.nc -Ctemp_em.cpt -P -K > temp_pre_em.ps
+  grdimage -JM6i -B2 emdepth_with_preproc.nc -Ctemp_em.cpt -B+t"Emplacement depth with preprocess" -P -K > temp_pre_em.ps
   pscoast -J -R -Gblack -K -O >> temp_pre_em.ps
   psscale -J -R -D6.5i/3i/3i/0.25i -Ctemp_em.cpt -O >> temp_pre_em.ps
-  # evince temp_pre_em.ps
+  evince temp_pre_em.ps
 
   # th with proprocess
   blockmean sills_gmt_format_geog.txt -i0,1,5 $rgn -I5k -fg  > temp
   nearneighbor temp $rgn -fg -S20k -N3 -I5k -Gth_with_preproc.nc
   makecpt `grdinfo -T0.5 th_with_preproc.nc` -Z -Crainbow > temp_th.cpt
-  grdimage -JM6i -B2 th_with_preproc.nc -Ctemp_th.cpt -P -K > temp_pre_th.ps
+  grdimage -JM6i -B2 th_with_preproc.nc -Ctemp_th.cpt -B+t"Transgressive height with preprocess" -P -K > temp_pre_th.ps
   pscoast -J -R -Gblack -K -O >> temp_pre_th.ps
   psscale -J -R -D6.25i/3i/3i/0.25i -B1000 -Ctemp_diam.cpt -O >> temp_pre_th.ps
-  # evince temp_pre_th.ps
+  evince temp_pre_th.ps
 }
 # grid_sill_vals
 
@@ -797,13 +800,13 @@ grid_sill_vals()
 multi_map_all_sills()
 {
 # Dataset maps x3, and in 4th panel add legend + add extra symbols, eg igneous centres and regional faults. Add text to map eg rosemary bank - Get OGA grav and mag data.
-datadir="/home/murray/Documents/Work/rockall_potential_fields/Rockall_Trough/Processed/grids/geotiff/"
+datadir="/home/murray/Documents/Work/rockall/rockall_potential_fields/old_downloads"
 outfile="multi_map_all_sills.ps"
 prj="-JM2.5i"
 # rgn=`gmtinfo -I0.1 $linefile`
 rgn=-R-14/-5/56/60.3
 # Make cpt for sill colour
-makecpt -T0/12.5/2 -M -Z -D -Cplasma > diam_grd.cpt
+makecpt -T0/12/2 -M -Z -D -Cplasma > diam_grd.cpt
 # Diameter map
 grdimage diam_with_preproc_km.nc -Cdiam_grd.cpt $prj $rgn -Y4i -K > $outfile
 grdcontour diam_with_preproc_km.nc -C2 $prj $rgn -Wgray10 -K -O >> $outfile
@@ -858,7 +861,7 @@ S 0.1i s 0.2i p200/14:FdarkorangeB- 0 0.5i Basalt
 S 0.1i c 0.05i white 0.5,black 0.5i Sill
 EOF
 
-convert -trim -rotate 90 -bordercolor white -border 30x30 -quality 100 -density 600 $outfile multi_map_all_sills.jpg
+convert -trim +repage -flatten -background white -rotate 90 -bordercolor white -border 30x30 -quality 100 -density 600 $outfile multi_map_all_sills.jpg
 eog multi_map_all_sills.jpg
 }
 # multi_map_all_sills
@@ -866,18 +869,18 @@ eog multi_map_all_sills.jpg
 
 seismic_image()
 {
-  ## Get line coords
+  # ## Get line coords
   # segyread tape=OGA_A012.sgy | segyclean | sugethw key=sx,sy output=geom > linecoords.txt
   # mapproject linecoords.txt -Ju+28/1:1 -I -C -F > linecoords_geog.txt
-  ## Extract mag
+  # # Extract mag
   # grdtrack linecoords_geog.txt -Goga_rtpmaganomaly.nc > mag_extract.txt
   # grdtrack linecoords_geog.txt -Goga_rtpmaganomaly_dz_cut.nc > dz_mag_extract.txt
   # grdtrack linecoords_geog.txt -Goga_rtpmaganomaly_THD_cut.nc > THD_mag_extract.txt
-  ## Extract grav
+  # # Extract grav
   # grdtrack linecoords_geog.txt -Goga_bouguer20.nc > boug_grav_extract.txt
   # grdtrack linecoords_geog.txt -Goga_bouguer20_dz_cut.nc > dz_grav_extract.txt
   # grdtrack linecoords_geog.txt -Goga_bouguer20_THD_cut.nc > THD_grav_extract.txt
-  ## Plot line
+  # # Plot line
   # segy2grd OGA_A012.sgy -GOGA_A012.nc -I1/0.004 -R1/7582/0/10
   outfile=seis_OGA_A012.ps
   makecpt -Cdarkblue,white,darkred -D -Z -T-400/400/10 > myseis.cpt
@@ -896,7 +899,7 @@ seismic_image()
   gmtset FONT_ANNOT_PRIMARY 12p,Helvetica,darkred
   psxy THD_grav_extract.txt -JX6i/1.5i -R58.9533953568/59.4564513411/0/0.004 -i1,2 -W1,darkred -Bx0 -By0.001+l"THD Gravity (mGal m@+-1@+)" -BsWn -O >> $outfile
   # psxy THD_mag_extract.txt -JX6i/1.5i -R58.9533953568/59.4564513411/0.001/0.02 -i1,2 -W1,darkgreen -B0 -O >> $outfile
-  convert -trim -bordercolor white -border 30x30 -quality 100 -density 600 seis_OGA_A012.ps seis_OGA_A012.png
+  convert -trim +repage -flatten -background white -bordercolor white -border 30x30 -quality 100 -density 600 seis_OGA_A012.ps seis_OGA_A012.png
   eog seis_OGA_A012.png
 }
 # seismic_image
@@ -905,7 +908,7 @@ combo_binned_diam_em_tr()
 {
   # Dataset maps x3, and in 4th panel add legend + add extra symbols, eg igneous centres and regional faults. Add text to map eg rosemary bank - Get OGA grav and mag data.
   gmtset FONT_TITLE 14p,Helvetica,black MAP_TITLE_OFFSET -10p
-  datadir="/home/murray/Documents/Work/rockall_potential_fields/Rockall_Trough/Processed/grids/geotiff/"
+  datadir="/home/murray/Documents/Work/rockall/rockall_potential_fields/old_downloads/"
   outfile="combo_diam_em_tr.jpg.ps"
   prj="-JM2.5i"
   # rgn=`gmtinfo -I0.1 $linefile`
@@ -965,18 +968,18 @@ combo_binned_diam_em_tr()
 
 
 
-  # Legend
-  echo "B diam.cpt 0i 0.15i+ef -B5+l\"Sill diameter (km)\"
-  G 2l
-  B emd.cpt 0i 0.15i+ef -B2+l\"Emplacement depth (km)\"
-  G 2l
-  B th.cpt 0i 0.15i+ef -B0.5+l\"Transgressive height (km)\" "> leg.txt
+# Legend
+echo "B diam.cpt 0i 0.15i+ef -B5+l\"Sill diameter (km)\"
+G 2l
+B emd.cpt 0i 0.15i+ef -B2+l\"Emplacement depth (km)\"
+G 2l
+B th.cpt 0i 0.15i+ef -B0.5+l\"Transgressive height (km)\""> leg.txt
   pslegend leg.txt -Dx2.75i/0.1i+w2.25i -O >> $outfile
 
   gmtset FONT_TITLE 24p,Helvetica,black MAP_TITLE_OFFSET 14p
 
 
-  convert -trim -rotate 90 -bordercolor white -border 30x30 -quality 100 -density 600 $outfile combo_diam_em_tr.jpg
+  convert -trim +repage -flatten -background white -rotate 90 -bordercolor white -border 30x30 -quality 100 -density 600 $outfile combo_diam_em_tr.jpg
   eog combo_diam_em_tr.jpg
 }
 # combo_binned_diam_em_tr
@@ -984,7 +987,7 @@ combo_binned_diam_em_tr()
 
 crustal_thickness_map()
 {
-  datadir="/home/murray/Documents/Work/rockall_potential_fields/Rockall_Trough/Processed/grids/geotiff/"
+  datadir="/home/murray/Documents/Work/rockall/rockall_potential_fields/old_downloads/"
   outfile="crustal_thickness_map.ps"
   prj="-JM2.5i"
   # rgn=`gmtinfo -I0.1 $linefile`
@@ -1035,15 +1038,15 @@ crustal_thickness_map()
   psxy $i -G${col} -Sc0.1 -W${col} -J -R -i0,2 -K -O >> $outfile
   ((counter++))
   done
-  echo "S 0.1i c 0.1i 283.33-1-1 0.25p 0.3i Funck et al. 2017 RAPIDS-1
-  S 0.1i c 0.1i 250-1-1 0.25p 0.3i Hauser et al. 1995 n-s RAPIDS
-  S 0.1i c 0.1i 216.67-1-1 0.25p 0.3i Klingelhofer et al. 2005 line D
-  S 0.1i c 0.1i 183.33-1-1 0.25p 0.3i Klingelhofer et al. 2005 line E
-  S 0.1i c 0.1i 150-1-1 0.25p 0.3i Morewood et al. 2005 RAPIDS-31
-  S 0.1i c 0.1i 116.67-1-1 0.25p 0.3i Morewood et al. 2005 RAPIDS-33
-  S 0.1i c 0.1i 83.333-1-1 0.25p 0.3i Morewood et al. 2005 RAPIDS-34
-  S 0.1i c 0.1i 50-1-1 0.25p 0.3i Roberts et al. 1988 profile 1
-  S 0.1i c 0.1i 16.667-1-1 0.25p 0.3i Roberts et al. 1988 profile 5" > leg.txt
+echo "S 0.1i c 0.1i 283.33-1-1 0.25p 0.3i Funck et al. 2017 RAPIDS-1
+S 0.1i c 0.1i 250-1-1 0.25p 0.3i Hauser et al. 1995 n-s RAPIDS
+S 0.1i c 0.1i 216.67-1-1 0.25p 0.3i Klingelhofer et al. 2005 line D
+S 0.1i c 0.1i 183.33-1-1 0.25p 0.3i Klingelhofer et al. 2005 line E
+S 0.1i c 0.1i 150-1-1 0.25p 0.3i Morewood et al. 2005 RAPIDS-31
+S 0.1i c 0.1i 116.67-1-1 0.25p 0.3i Morewood et al. 2005 RAPIDS-33
+S 0.1i c 0.1i 83.333-1-1 0.25p 0.3i Morewood et al. 2005 RAPIDS-34
+S 0.1i c 0.1i 50-1-1 0.25p 0.3i Roberts et al. 1988 profile 1
+S 0.1i c 0.1i 16.667-1-1 0.25p 0.3i Roberts et al. 1988 profile 5" > leg.txt
   pslegend leg.txt -Dx3.5i/0.1i+w2i -R -J -K -O  >> $outfile
   psxy -R -J points_regressed.txt -L+d+p2,pink -W2,red -i0,2,3 -K -O >> $outfile
   psbasemap -J -R -B0 -K -O >> $outfile

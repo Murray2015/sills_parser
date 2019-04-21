@@ -1,0 +1,9 @@
+S 0.1i c 0.1i 283.33-1-1 0.25p 0.3i Funck et al. 2017 RAPIDS-1
+S 0.1i c 0.1i 250-1-1 0.25p 0.3i Hauser et al. 1995 n-s RAPIDS
+S 0.1i c 0.1i 216.67-1-1 0.25p 0.3i Klingelhofer et al. 2005 line D
+S 0.1i c 0.1i 183.33-1-1 0.25p 0.3i Klingelhofer et al. 2005 line E
+S 0.1i c 0.1i 150-1-1 0.25p 0.3i Morewood et al. 2005 RAPIDS-31
+S 0.1i c 0.1i 116.67-1-1 0.25p 0.3i Morewood et al. 2005 RAPIDS-33
+S 0.1i c 0.1i 83.333-1-1 0.25p 0.3i Morewood et al. 2005 RAPIDS-34
+S 0.1i c 0.1i 50-1-1 0.25p 0.3i Roberts et al. 1988 profile 1
+S 0.1i c 0.1i 16.667-1-1 0.25p 0.3i Roberts et al. 1988 profile 5
