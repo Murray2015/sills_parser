@@ -56,8 +56,8 @@ rockall_basemap()
   # -5 60.3
   # -5 56
   # -14 56" | gmt psxy -Wred -Gred -R -J -O -K >> $outfile
-  grdimage ../global_data/ETOPO1_Ice_g_gmt4.grd -Cetopo1 $prj $rgn -X3i -Bx2 -By2 -BSWne -K -O >> $outfile
-  grdcontour ../global_data/ETOPO1_Ice_g_gmt4.grd -C500 $prj $rgn -Wgray10 -K -O >> $outfile
+  grdimage ~/Documents/global_data/ETOPO1_Ice_g_gmt4.grd -Cetopo1 $prj $rgn -X3i -Bx2 -By2 -BSWne -K -O >> $outfile
+  grdcontour ~/Documents/global_data/ETOPO1_Ice_g_gmt4.grd -C500 $prj $rgn -Wgray10 -K -O >> $outfile
   psscale -D2.65i/0.35i+w1.5i/0.15i+e -Cetopo_rock2.cpt -B4+l"Topography (km)" -K -O >> $outfile
   psxy $prj $rgn $linefile -gd5k -W0.2,darkred -K -O >> $outfile
   psxy $prj $rgn volc_tuitt.gmt -St0.2 -Gred -Wred -K -O >> $outfile
@@ -116,7 +116,8 @@ eog oga_area_density.jpg
 multi_map()
 {
 # Dataset maps x3, and in 4th panel add legend + add extra symbols, eg igneous centres and regional faults. Add text to map eg rosemary bank - Get OGA grav and mag data.
-datadir="/home/murray/Documents/Work/rockall_potential_fields/Rockall_Trough/Processed/grids/geotiff/"
+# datadir="/home/murray/Documents/Work/rockall_potential_fields/Rockall_Trough/Processed/grids/geotiff/"
+datadir="/home/murray/Documents/Work/rockall/rockall_potential_fields/old_downloads/"
 outfile="intro_maps.ps"
 prj="-JM2.5i"
 rgn=`gmtinfo -I0.1 $linefile`
@@ -181,7 +182,7 @@ S 0.1i - 0.2i black 1 0.5i Seismic line
 S 0.1i c 0.05i white 0.5,black 0.5i Sill
 EOF
 
-convert -trim -rotate 90 -bordercolor white -border 30x30 -quality 100 -density 600 $outfile intro_maps.jpg
+convert -trim +repage -flatten -backgroundcolor white -rotate 90 -bordercolor white -border 30x30 -quality 100 -density 600 $outfile intro_maps.jpg
 eog intro_maps.jpg
 }
 # multi_map
@@ -455,7 +456,7 @@ pot_der_4()
 multi_map_diam()
 {
 # Dataset maps x3, and in 4th panel add legend + add extra symbols, eg igneous centres and regional faults. Add text to map eg rosemary bank - Get OGA grav and mag data.
-datadir="/home/murray/Documents/Work/rockall_potential_fields/Rockall_Trough/Processed/grids/geotiff/"
+datadir="/home/murray/Documents/Work/rockall/rockall_potential_fields/old_downloads/"
 outfile="sill_diam_maps.ps"
 prj="-JM2.5i"
 # rgn=`gmtinfo -I0.1 $linefile`
@@ -531,7 +532,7 @@ G 1l
 B diam.cpt 0i 0.15i+ef -B5+l"Sill diameter (km)"
 EOF
 
-convert -trim -rotate 90 -bordercolor white -border 30x30 -quality 100 -density 600 $outfile sill_diam_maps.jpg
+convert -trim +repage -flatten -background white -rotate 90 -bordercolor white -border 30x30 -quality 100 -density 600 $outfile sill_diam_maps.jpg
 eog sill_diam_maps.jpg
 }
 # multi_map_diam
@@ -540,7 +541,7 @@ eog sill_diam_maps.jpg
 multi_map_emd()
 {
 # Dataset maps x3, and in 4th panel add legend + add extra symbols, eg igneous centres and regional faults. Add text to map eg rosemary bank - Get OGA grav and mag data.
-datadir="/home/murray/Documents/Work/rockall_potential_fields/Rockall_Trough/Processed/grids/geotiff/"
+datadir="/home/murray/Documents/Work/rockall/rockall_potential_fields/old_downloads/"
 outfile="sill_emd_maps.ps"
 prj="-JM2.5i"
 # rgn=`gmtinfo -I0.1 $linefile`
@@ -614,7 +615,7 @@ G 1l
 B emd.cpt 0i 0.15i+ef -B2+l"Sill emplacement depth (km)"
 EOF
 
-convert -trim -rotate 90 -bordercolor white -border 30x30 -quality 100 -density 600 $outfile sill_emd_maps.jpg
+convert -trim +repage -flatten -background white -rotate 90 -bordercolor white -border 30x30 -quality 100 -density 600 $outfile sill_emd_maps.jpg
 eog sill_emd_maps.jpg
 }
 # multi_map_emd
@@ -623,7 +624,7 @@ eog sill_emd_maps.jpg
 multi_map_th()
 {
 # Dataset maps x3, and in 4th panel add legend + add extra symbols, eg igneous centres and regional faults. Add text to map eg rosemary bank - Get OGA grav and mag data.
-datadir="/home/murray/Documents/Work/rockall_potential_fields/Rockall_Trough/Processed/grids/geotiff/"
+datadir="/home/murray/Documents/Work/rockall/rockall_potential_fields/old_downloads/"
 outfile="sill_th_maps.ps"
 prj="-JM2.5i"
 # rgn=`gmtinfo -I0.1 $linefile`
@@ -696,7 +697,7 @@ G 1l
 B th.cpt 0i 0.15i+ef -B0.5+l"Sill transgressive height (km)"
 EOF
 
-convert -trim -rotate 90 -bordercolor white -border 30x30 -quality 100 -density 600 $outfile sill_th_maps.jpg
+convert -trim +repage -flatten -background white -rotate 90 -bordercolor white -border 30x30 -quality 100 -density 600 $outfile sill_th_maps.jpg
 eog sill_th_maps.jpg
 }
 # multi_map_th
@@ -704,26 +705,28 @@ eog sill_th_maps.jpg
 
 scatter_plot()
 {
+  #,diameter,emplacement_depth,midpoint_x,midpoint_y,name,transgressive_height
+
   # Convert sills into GMT format. Note space removal from name with tr.
-  tr -d " " <  ${file} | awk -F"," '{if(NR==1)print "midpoint_x midpoint_y name diameter emplacement_depth transgressive_height"; else print $4,$5,$6,$2,$3,$7}' > sills_gmt_format.txt
+  tr -d " " <  ${file} | awk -F"," '{if(NR==1)print "# midpoint_x midpoint_y name diameter emplacement_depth transgressive_height"; else print $4,$5,$6,$2,$3,$7}' > sills_gmt_format.txt
   # Convert sills into latlon
   mapproject -Ju+29/1:1 -I -C -F sills_gmt_format.txt  > sills_gmt_format_geog.txt
-  sed -i '1c midpoint_x midpoint_y name diameter emplacement_depth transgressive_height' sills_gmt_format_geog.txt
+  sed -i '1c #midpoint_x midpoint_y name diameter emplacement_depth transgressive_height' sills_gmt_format_geog.txt
 
   # Sample bathy
   grdtrack sills_gmt_format_geog.txt -Goga_bathy.nc > temp1
   # Sample grav
   grdtrack temp1 -Goga_bouguer20.nc > temp2
-  # Sample mag
-  grdtrack temp2 -Goga_rtpmaganomaly.nc > sills_gmt_format_geog_sampled.txt
+  # Sample mag, and remove tab separators
+  grdtrack temp2 -Goga_rtpmaganomaly.nc | tr "\t" " " > sills_gmt_format_geog_sampled.txt
   # Rename header and tidy temp files
-  sed -i '1c midpoint_x midpoint_y name diameter emplacement_depth transgressive_height bathy grav mag' sills_gmt_format_geog_sampled.txt
-  rm temp1 temp2
+  sed -i '1c midpoint_x midpoint_y bathy grav mag name diameter emplacement_depth transgressive_height' sills_gmt_format_geog_sampled.txt
+  #rm temp1 temp2
 
   ### Analysis continued in R
 
 }
-# scatter_plot
+scatter_plot
 
 
 grid_sill_vals()
@@ -1049,6 +1052,6 @@ crustal_thickness_map()
   psconvert -A0.5 $outfile
   eog crustal_thickness_map.jpg
 }
-crustal_thickness_map
+# crustal_thickness_map
 
 exit
