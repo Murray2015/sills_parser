@@ -22,6 +22,8 @@ EOF
 
 ogr2ogr -F "GMT" basalt_1.gmt basalt_1.shp
 mapproject basalt_1.gmt -Ju+28/1:1 -I -C -F > basalt.txt
+ogr2ogr -F "GMT" magee_2014_survey.gmt magee_2014_survey.shp
+
 
 rockall_basemap()
 {
@@ -67,6 +69,7 @@ rockall_basemap()
   echo "-10.5 56.3 Hebrides Terrace" | pstext -J -R -K -F+f8p,Helvetica,black -O >> $outfile
   psxy well_location.txt -J -R -S+0.12i -Gblack -K -O >> $outfile
   psxy well_location.txt -J -R -Sc0.06i -Gblack -K -O >> $outfile
+  psxy magee_2014_survey.gmt -W0.4,pink -L -J -R -K -O >> $outfile
   # for i in `seq 1 17`
   # do
   # awk -v i=$i '{if(NR==i)print $0}' well_location.txt | pstext -J -R -F+f6,Helvetica,black -D0.2i/0i -K -O >> $outfile
@@ -192,6 +195,8 @@ sill_stat_hist()
 {
 # Histogram of sill lengths, transgressive heights and emplacement depth
 awk -F"," '{if(NR>1)print $2/1000, $3, $7}' ${file} > temp_sills_whitespace.txt
+# Select sills within the limits of the Magee survey
+awk -F"," '{if(NR>1)print $4, $5, $2/1000, $3, $7}'  oga_output_trans_decomp.csv | mapproject -Ju+29/1:1 -I -C -F | gmtselect -Fmagee_2014_survey.gmt | awk '{print $3, $4, $5}' > temp_sills_whitespace_oga-magee.txt
 outfile=sill_stat_hist.ps
 # Calculate summary stats
 gmtmath temp_sills_whitespace.txt -C0,1,2 LOWER -S  = stats_lower.txt
@@ -219,6 +224,7 @@ pshistogram temp_sills_whitespace.txt -JX2.5i -R0/40/0/150 -W1 -Bx10+l"Diameter 
 pshistogram jackson_sills.txt -J -R0/40/0/50 -W2 -L0.5,red -i0 -S -Z1 -K -O >> $outfile
 pshistogram magee_sills.txt -J -R0/40/0/50 -W2 -L0.5,green -i0 -S -Z1 -K -O >> $outfile
 pshistogram reynolds_sills.txt -J -R0/40/0/50 -W2 -L0.5,blue -i0 -S -Z1 -K -O >> $outfile
+pshistogram temp_sills_whitespace_oga-magee.txt  -J -R0/40/0/50 -W2 -L0.5,green,- -i0 -S -Z1 -K -O >> $outfile
 psbasemap -R -J -B0 -K -O >> $outfile
 pshistogram temp_sills_whitespace.txt -JX2.5i  -R0/5/0/150 -W0.1 -Bx1+l"Transgressive height (km)" -BsNwe -Gblack -i2 -X2.5i -K -O >> $outfile
 plot_stat stats_lower.txt 3 red
@@ -230,6 +236,7 @@ plot_stat stats_upper.txt 3 violet
 echo "b" | pstext -R -J -F+cTR -C35% -W1.5 -D-0.3 -Gwhite -K -O >> $outfile
 pshistogram temp_sills_whitespace.txt -JX2.5i  -R0/5/0/150 -W0.1 -Bx1+l"Transgressive height (km)" -BsNwe -Gblack -i2 -K -O >> $outfile
 pshistogram magee_sills.txt -J -R0/5/0/70 -W0.2 -L0.5,green -i2 -S -Z1 -K -O >> $outfile
+pshistogram temp_sills_whitespace_oga-magee.txt  -J -R0/5/0/70 -W0.2 -L0.5,green,- -i2 -S -Z1 -K -O >> $outfile
 psbasemap -R -J -B0 -K -O >> $outfile
 pshistogram temp_sills_whitespace.txt -JX2.5i -R0/10/0/150 -W0.1 -Bx2+l"Emplacement depth (km)" -BSwne -Gblack -i1 -X2.5i -K -O >> $outfile
 plot_stat stats_lower.txt 2 red
@@ -243,11 +250,12 @@ pshistogram temp_sills_whitespace.txt -JX2.5i -R0/10/0/150 -W0.1 -Bx2+l"Emplacem
 pshistogram jackson_sills.txt -J -R0/10/0/50 -W0.2 -L0.5,red -i1 -S -Z1 -K -O >> $outfile
 pshistogram magee_sills.txt -J -R0/10/0/50 -W0.2 -L0.5,green -i1 -S -Z1 -K -O >> $outfile
 pshistogram reynolds_sills.txt -J -R0/10/0/50 -W0.2 -L0.5,blue -i1 -S -Z1 -K -O >> $outfile
+pshistogram temp_sills_whitespace_oga-magee.txt  -J -R0/10/0/50 -W0.2 -L0.5,green,- -i1 -S -Z1 -K -O >> $outfile
 psbasemap -R -J -B0 -O >> $outfile
 psconvert $outfile -A0.5 -P
 eog sill_stat_hist.jpg
 }
-# sill_stat_hist
+sill_stat_hist
 
 
 vert_der()
@@ -1025,7 +1033,7 @@ crustal_thickness_map()
   psscale $rgn $prj -D2.75i/0.15i+w2i/0.15i+e -B5+l"Seafloor to moho thickness (km)" -Cthickness.cpt -K -O >> $outfile
   psxy sills_x_y_diam_emdepth_trans.txt $prj $rgn -Sc0.05 -Gwhite -W0.1 -i0,1 -K -O >> $outfile
   psxy basalt.txt $prj $rgn -Gp200/14:FdarkorangeB-  -K -O >> $outfile
-  echo "b" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -K -O >> $outfile
+  echo "c" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -K -O >> $outfile
 
   # Scatter graph
   psxy all_crustalthickness.txt -R0/5/2/35 -JX2.5i/2i -Sc0.1 -Gblack -Bx1+l"Seafloor depth (km)" -By10+l"Crustal thickness (km)" -P -BSWne -i0,2 -X-3.6i -Y-2.5i -K -O >> $outfile
@@ -1050,7 +1058,7 @@ S 0.1i c 0.1i 16.667-1-1 0.25p 0.3i Roberts et al. 1988 profile 5" > leg.txt
   pslegend leg.txt -Dx3.5i/0.1i+w2i -R -J -K -O  >> $outfile
   psxy -R -J points_regressed.txt -L+d+p2,pink -W2,red -i0,2,3 -K -O >> $outfile
   psbasemap -J -R -B0 -K -O >> $outfile
-  echo "c" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -O >> $outfile
+  echo "b" | pstext $prj $rgn -F+cBL -C25% -W1.5 -D0.2 -Gwhite -O >> $outfile
 
   psconvert -A0.5 $outfile
   eog crustal_thickness_map.jpg

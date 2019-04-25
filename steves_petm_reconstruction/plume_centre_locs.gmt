@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 OUT=./plume_centre_locs.ps
 
@@ -43,7 +43,7 @@ OBLIQUE_ORIGIN=(`echo "0 0" | project -T$ORIGINX/$ORIGINY -C$CENTREY/$CENTREY -F
 
 
 gmt gmtset MAP_FRAME_TYPE plain
-	
+
 
 
 
@@ -65,10 +65,10 @@ gmt psxy $FEATURE_DIR/deep_basin_chain_plot.xy -R$REGION_MAP -J$SCALE_MAP -G225 
 gmt psxy $FEATURE_DIR/coast_eur \
    $FEATURE_DIR/coast_grn_c24 \
    $FEATURE_DIR/coast_nam_c24 \
-   $FEATURE_DIR/coast_faroe.xy -R$REGION_MAP -J$SCALE_MAP -W0.5p,128 -K -O >> $OUT 
+   $FEATURE_DIR/coast_faroe.xy -R$REGION_MAP -J$SCALE_MAP -W0.5p,128 -K -O >> $OUT
 
 # STRATIGRAPHIC SECTIONS
-psxy -R$REGION_MAP -J$SCALE_MAP -Ss0.2 -Gskyblue2 -K -O <<EOF >> $OUT 
+psxy -R$REGION_MAP -J$SCALE_MAP -Ss0.2 -Gskyblue2 -K -O <<EOF >> $OUT
 1.5 60
 -4.5 60.5
 EOF
@@ -101,13 +101,13 @@ EOF
   echo "a" | pstext -R -J -F+cBL -C25% -W1.5 -D0.2 -Gwhite  -K -O >> $OUT
 
 
-  prj="-JM2.5i"
-  rgn=-R-14/-5/56/60.3
+  prj="-JM2.3i"
+  rgn=-R-14/-5/55.6/60.3
 file="../oga_output_trans_decomp.csv"
 linefile="../Rockall-UK_coords_geog.txt"
 misc="-Bx2 -By2 -BSWne"
-  grdimage ../../global_data/ETOPO1_Ice_g_gmt4.grd -Cetopo1 $prj $rgn -X1.9i -Bx2 -By2 -BSwnE -K -O >> $OUT
-  grdcontour ../../global_data/ETOPO1_Ice_g_gmt4.grd -C500 $prj $rgn -Wgray10 -K -O >> $OUT
+  grdimage /home/murray/Documents/global_data/ETOPO1_Ice_g_gmt4.grd -Cetopo1 $prj $rgn -X1.9i -Bx2 -By2 -BSwnE -K -O >> $OUT
+  grdcontour /home/murray/Documents/global_data/ETOPO1_Ice_g_gmt4.grd -C500 $prj $rgn -Wgray10 -K -O >> $OUT
   psscale -D3i/0.35i+w1.5i/0.15i+e -C../etopo_rock2.cpt -B4+l"Topography (km)" -K -O >> $OUT
   psxy $prj $rgn $linefile -gd5k -W0.2,darkred -K -O >> $OUT
   psxy $prj $rgn ../volc_tuitt.gmt -St0.2 -Gred -Wred -K -O >> $OUT
@@ -117,6 +117,8 @@ misc="-Bx2 -By2 -BSWne"
   echo "-10.5 56.3 Hebrides Terrace" | pstext -J -R -K -F+f8p,Helvetica,black -O >> $OUT
   psxy ../well_location.txt -J -R -S+0.12i -Gblack -K -O >> $OUT
   psxy ../well_location.txt -J -R -Sc0.06i -Gblack -K -O >> $OUT
+  psxy ../magee_2014_survey.gmt -W0.75,hotpink -L -J -R -K -O >> $OUT
+
   # for i in `seq 1 17`
   # do
   # awk -v i=$i '{if(NR==i)print $0}' well_location.txt | pstext -J -R -F+f6,Helvetica,black -D0.2i/0i -K -O >> $OUT

@@ -1,12 +1,16 @@
 # GMT 6 Session common arguments shelf
 BEGIN GMT 6.0.0
-B	0.2+lSill area density (km @+-1@+)
-J	X
-JM	M/1:1
+B	4+lTopography (km)
+J	M
+JE	E-17/64.5/3.7
+JM	M2.3i
 Jm	m/1:1
 JU	U+28
-Ju	u+29/1:1
-JX	X3i
-R	202000/820000/6188000/6700000
-@L	3
+Ju	u+28/1:1
+JX	X2.5i
+Jx	x1
+R	-14/-5/55.6/60.3
+X	1.9i
+Y	6
+@L	18
 END
