@@ -224,7 +224,7 @@ pshistogram temp_sills_whitespace.txt -JX2.5i -R0/40/0/150 -W1 -Bx10+l"Diameter 
 pshistogram jackson_sills.txt -J -R0/40/0/50 -W2 -L0.5,red -i0 -S -Z1 -K -O >> $outfile
 pshistogram magee_sills.txt -J -R0/40/0/50 -W2 -L0.5,green -i0 -S -Z1 -K -O >> $outfile
 pshistogram reynolds_sills.txt -J -R0/40/0/50 -W2 -L0.5,blue -i0 -S -Z1 -K -O >> $outfile
-pshistogram temp_sills_whitespace_oga-magee.txt  -J -R0/40/0/50 -W2 -L0.5,green,- -i0 -S -Z1 -K -O >> $outfile
+pshistogram temp_sills_whitespace_oga-magee.txt  -J -R0/40/0/50 -W2 -L0.75,gray40,- -i0 -S -Z1 -K -O >> $outfile
 psbasemap -R -J -B0 -K -O >> $outfile
 pshistogram temp_sills_whitespace.txt -JX2.5i  -R0/5/0/150 -W0.1 -Bx1+l"Transgressive height (km)" -BsNwe -Gblack -i2 -X2.5i -K -O >> $outfile
 plot_stat stats_lower.txt 3 red
@@ -236,7 +236,7 @@ plot_stat stats_upper.txt 3 violet
 echo "b" | pstext -R -J -F+cTR -C35% -W1.5 -D-0.3 -Gwhite -K -O >> $outfile
 pshistogram temp_sills_whitespace.txt -JX2.5i  -R0/5/0/150 -W0.1 -Bx1+l"Transgressive height (km)" -BsNwe -Gblack -i2 -K -O >> $outfile
 pshistogram magee_sills.txt -J -R0/5/0/70 -W0.2 -L0.5,green -i2 -S -Z1 -K -O >> $outfile
-pshistogram temp_sills_whitespace_oga-magee.txt  -J -R0/5/0/70 -W0.2 -L0.5,green,- -i2 -S -Z1 -K -O >> $outfile
+pshistogram temp_sills_whitespace_oga-magee.txt  -J -R0/5/0/70 -W0.2 -L0.75,gray40,- -i2 -S -Z1 -K -O >> $outfile
 psbasemap -R -J -B0 -K -O >> $outfile
 pshistogram temp_sills_whitespace.txt -JX2.5i -R0/10/0/150 -W0.1 -Bx2+l"Emplacement depth (km)" -BSwne -Gblack -i1 -X2.5i -K -O >> $outfile
 plot_stat stats_lower.txt 2 red
@@ -250,7 +250,7 @@ pshistogram temp_sills_whitespace.txt -JX2.5i -R0/10/0/150 -W0.1 -Bx2+l"Emplacem
 pshistogram jackson_sills.txt -J -R0/10/0/50 -W0.2 -L0.5,red -i1 -S -Z1 -K -O >> $outfile
 pshistogram magee_sills.txt -J -R0/10/0/50 -W0.2 -L0.5,green -i1 -S -Z1 -K -O >> $outfile
 pshistogram reynolds_sills.txt -J -R0/10/0/50 -W0.2 -L0.5,blue -i1 -S -Z1 -K -O >> $outfile
-pshistogram temp_sills_whitespace_oga-magee.txt  -J -R0/10/0/50 -W0.2 -L0.5,green,- -i1 -S -Z1 -K -O >> $outfile
+pshistogram temp_sills_whitespace_oga-magee.txt  -J -R0/10/0/50 -W0.2 -L0.75,gray40,- -i1 -S -Z1 -K -O >> $outfile
 psbasemap -R -J -B0 -O >> $outfile
 psconvert $outfile -A0.5 -P
 eog sill_stat_hist.jpg

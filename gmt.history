@@ -1,7 +1,7 @@
 # GMT 6 Session common arguments shelf
 BEGIN GMT 6.0.0
-B	4+lTopography (km)
-J	M
+B	0
+J	X
 JE	E-17/64.5/3.7
 JM	M2.3i
 Jm	m/1:1
@@ -9,8 +9,8 @@ JU	U+28
 Ju	u+28/1:1
 JX	X2.5i
 Jx	x1
-R	-14/-5/55.6/60.3
-X	1.9i
+R	0/10/0/50
+X	2.5i
 Y	6
-@L	18
+@L	40
 END
