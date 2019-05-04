@@ -1,7 +1,7 @@
 ### Scatter plot matrix for Rockall sills data ###
 
 # Set working directory
-setwd("~/Documents/Work/rockall/sills_parser")
+#setwd("~/Documents/Work/rockall/sills_parser")
 
 # Load required packages 
 library("GGally")
@@ -35,3 +35,27 @@ rockall_plot = ggpairs(data_pairs,
 
 # Save ggpairs plot 
 ggsave("rockall_sills_scatterplot_matrix.png", rockall_plot, dpi=600, width = 6.5, height = 6.5, units = "in")
+
+
+
+
+######################################
+### Explore depth : diameter ratio ###
+######################################
+
+## Note, not included in paper, but possibly useful for future work... 
+
+# Regression analysis on our Rockall sills data
+lm_mod = with(data_pairs, lm(diameter ~ emplacement_depth))
+summary(lm_mod)
+
+# Regression analysis on Malthe-Sorrensen 2004 modelled data 
+malthe = read.table("malthe_sorrensen_w_diam_d_emdepth2.dat", col.names = c("em_depth", "diam"))
+malthe_mod = with(malthe, lm(diam ~ em_depth))
+summary(malthe_mod)
+
+# Plot Rockall and Malthe-Sorrensen data and regression lines 
+plot(x=data_pairs$emplacement_depth, y=data_pairs$diameter, pch=".")
+points(malthe$em_depth, malthe$diam)
+abline(lm_mod, col="red")
+abline(malthe_mod, col="blue")
